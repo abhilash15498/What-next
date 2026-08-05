@@ -5,8 +5,8 @@ import { indexedDbStorage } from '../lib/storage/indexedDbAdapter';
 const STARTER_INTERESTS = [
   'ai',
   'programming',
-  'indian',
-  'japanese',
+  'cooking',
+  'food',
   'anime',
   'bollywood',
   'travel',

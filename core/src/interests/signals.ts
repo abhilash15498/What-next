@@ -29,6 +29,7 @@ export const TAG_KEYWORDS: Record<string, string[]> = {
   design: ['ui design', 'ux design', 'figma', 'typography'],
   gaming: ['video game', 'gaming', 'playstation', 'xbox', 'steam'],
   productivity: ['productivity', 'time management', 'note taking', 'todo list'],
+  cooking: ['cooking', 'recipe', 'food', 'chef', 'baking', 'culinary', 'meal prep', 'kitchen'],
 };
 
 const CATEGORY_HINTS: Record<Category, string[]> = {
