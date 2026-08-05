@@ -2,26 +2,26 @@ import type { Candidate, InterestProfile, Preferences } from '../types.js';
 import type { Provider } from './types.js';
 import { topInterests } from '../interests/profile.js';
 
-// ── Static fallback ────────────────────────────────────────────────────────────
+// ── Real Curated Travel & Destination Catalog ────────────────────────────────
 
-const STATIC_TRAVEL_ITEMS: Candidate[] = [
+const REAL_TRAVEL_ITEMS: Candidate[] = [
   {
     id: 'travel_weekend_getaway',
-    title: 'Plan a 3-day weekend travel getaway',
+    title: 'Plan a 3-day weekend nature & cabin getaway',
     description:
-      'Research nearby nature spots, historical towns, or coastal retreats for a short refreshing weekend escape.',
+      'Research nearby national parks, mountain cabins, or coastal retreats for a short refreshing weekend escape.',
     url: 'https://www.google.com/travel',
     category: 'travel',
     tags: ['travel', 'lifestyle', 'outdoor'],
     difficulty: 'beginner',
     estimatedMinutes: 30,
-    popularity: 0.85,
+    popularity: 0.88,
     addedAt: Date.parse('2025-01-01'),
     suitedWindows: ['weekend', 'now'],
   },
   {
     id: 'travel_scenic_roadtrip',
-    title: 'Map out a scenic road trip route & food spots',
+    title: 'Map out a scenic coastal road trip route & food stops',
     description:
       'Discover scenic driving routes, local culinary hidden gems, and picturesque stopovers along the way.',
     url: 'https://www.google.com/maps',
@@ -29,13 +29,25 @@ const STATIC_TRAVEL_ITEMS: Candidate[] = [
     tags: ['travel', 'food', 'photography'],
     difficulty: 'beginner',
     estimatedMinutes: 45,
-    popularity: 0.82,
+    popularity: 0.85,
     addedAt: Date.parse('2025-02-01'),
     suitedWindows: ['weekend'],
   },
+  {
+    id: 'travel_kyoto_japan',
+    title: 'Explore Kyoto & Tokyo 5-day cultural travel itinerary',
+    description:
+      'Discover historic temples, bamboo groves, food markets, and bullet-train day trips in Japan.',
+    url: 'https://www.wikivoyage.org/wiki/Kyoto',
+    category: 'travel',
+    tags: ['travel', 'culture'],
+    difficulty: 'beginner',
+    estimatedMinutes: 35,
+    popularity: 0.9,
+    addedAt: Date.parse('2025-01-15'),
+    suitedWindows: ['weekend', 'tonight'],
+  },
 ];
-
-const PURE_MOVIE_TAGS = new Set(['bollywood', 'anime', 'movies', 'film', 'cinema']);
 
 interface WikiSearchResult {
   pageid: number;
@@ -45,7 +57,6 @@ interface WikiSearchResult {
 
 async function fetchWikiTravelCandidates(profile: InterestProfile): Promise<Candidate[]> {
   const topTag = topInterests(profile, 1)[0]?.name ?? 'travel';
-  if (PURE_MOVIE_TAGS.has(topTag)) return [];
 
   const query = encodeURIComponent(`${topTag.replace(/_/g, ' ')} travel tourism destination`);
   const url = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${query}&utf8=1&format=json&origin=*`;
@@ -54,25 +65,28 @@ async function fetchWikiTravelCandidates(profile: InterestProfile): Promise<Cand
   const data = (await res.json()) as { query?: { search?: WikiSearchResult[] } };
   if (!data.query?.search?.length) return [];
 
-  return data.query.search.slice(0, 8).map((item) => {
-    const cleanSnippet = item.snippet.replace(/<[^>]+>/g, '');
-    return {
-      id: `wiki_travel_${item.pageid}`,
-      title: `Explore Destination: ${item.title}`,
-      description: cleanSnippet.length > 180 ? cleanSnippet.slice(0, 177) + '…' : cleanSnippet,
-      url: `https://en.wikipedia.org/wiki/${encodeURIComponent(item.title)}`,
-      category: 'travel',
-      tags: [topTag, 'travel'],
-      difficulty: 'beginner',
-      estimatedMinutes: 25,
-      popularity: 0.86,
-      addedAt: Date.now(),
-      suitedWindows: ['weekend', 'tonight'],
-    };
-  });
+  return data.query.search
+    .filter((item) => !item.title.toLowerCase().includes('rankings') && !item.title.toLowerCase().includes('list of'))
+    .slice(0, 5)
+    .map((item) => {
+      const cleanSnippet = item.snippet.replace(/<[^>]+>/g, '');
+      return {
+        id: `wiki_travel_${item.pageid}`,
+        title: `Explore Destination: ${item.title}`,
+        description: cleanSnippet.length > 180 ? cleanSnippet.slice(0, 177) + '…' : cleanSnippet,
+        url: `https://en.wikipedia.org/wiki/${encodeURIComponent(item.title)}`,
+        category: 'travel',
+        tags: [topTag, 'travel'],
+        difficulty: 'beginner',
+        estimatedMinutes: 25,
+        popularity: 0.86,
+        addedAt: Date.now(),
+        suitedWindows: ['weekend', 'tonight'],
+      };
+    });
 }
 
-// ── Provider ───────────────────────────────────────────────────────────────────
+const TRAVEL_TAGS = new Set(['travel', 'outdoor', 'lifestyle']);
 
 export const travelProvider: Provider = {
   category: 'travel',
@@ -85,29 +99,9 @@ export const travelProvider: Provider = {
       // Fall through
     }
 
-    const active = topInterests(profile, 5).filter((i) => i.score > 0);
-    const dynamicItems: Candidate[] = [];
-
-    for (const interest of active) {
-      const tag = interest.name;
-      if (PURE_MOVIE_TAGS.has(tag)) continue;
-      const displayTag = tag.replace(/_/g, ' ');
-
-      dynamicItems.push({
-        id: `travel_dynamic_${tag}_itinerary`,
-        title: `Plan a ${displayTag}-inspired travel & exploration trip`,
-        description: `Research top destinations, hidden gems, and travel itineraries themed around ${displayTag}.`,
-        url: `https://www.google.com/search?q=${encodeURIComponent(displayTag + ' travel destination itinerary')}`,
-        category: 'travel',
-        tags: [tag, 'travel'],
-        difficulty: 'beginner',
-        estimatedMinutes: 35,
-        popularity: 0.88,
-        addedAt: Date.now(),
-        suitedWindows: ['weekend', 'tonight'],
-      });
-    }
-
-    return [...dynamicItems, ...STATIC_TRAVEL_ITEMS];
+    const hasTravelInterest = Object.values(profile).some(
+      (i) => i.score > 0 && TRAVEL_TAGS.has(i.name),
+    );
+    return hasTravelInterest ? REAL_TRAVEL_ITEMS : [];
   },
 };
