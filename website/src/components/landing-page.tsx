@@ -293,6 +293,73 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Live API & BYOK Showcase Section */}
+        <section className="relative px-6 pb-24 lg:px-10">
+          <div className="mx-auto max-w-5xl">
+            <div className="mb-12 max-w-2xl">
+              <p className="mb-3 font-mono text-[10px] tracking-[0.28em] text-[#e8a84a] uppercase">
+                Real-time Intelligence
+              </p>
+              <h2 className="font-display text-3xl leading-tight font-bold tracking-tight text-[#ece8e1] sm:text-4xl">
+                Keyless Defaults + BYOK Live API Integrations
+              </h2>
+              <p className="mt-4 font-mono text-sm leading-relaxed text-[#ece8e1]/55">
+                WhatNext? works 100% keyless out of the box using public feeds. Optionally bring your own API keys in Settings to connect live global databases directly from your browser.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="rounded-2xl border border-[#ece8e1]/10 bg-[#080a10] p-5">
+                <span className="inline-flex rounded-lg bg-[#e8a84a]/10 p-2 text-[#e8a84a] mb-3 text-lg">🎬</span>
+                <h3 className="font-display text-base font-semibold text-[#ece8e1]">TMDB Movies & TV</h3>
+                <p className="mt-2 font-mono text-xs leading-relaxed text-[#ece8e1]/50">
+                  Live searches TMDB’s 1,000,000+ movie database using your exact interest tags with real runtimes and ratings.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-[#ece8e1]/10 bg-[#080a10] p-5">
+                <span className="inline-flex rounded-lg bg-[#e8a84a]/10 p-2 text-[#e8a84a] mb-3 text-lg">🧠</span>
+                <h3 className="font-display text-base font-semibold text-[#ece8e1]">Groq AI (Llama-3 LLM)</h3>
+                <p className="mt-2 font-mono text-xs leading-relaxed text-[#ece8e1]/50">
+                  Connects to Groq’s ultra-fast Llama-3 model to write deep, human-like personalized "Why Now?" explanations.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-[#ece8e1]/10 bg-[#080a10] p-5">
+                <span className="inline-flex rounded-lg bg-[#e8a84a]/10 p-2 text-[#e8a84a] mb-3 text-lg">📚</span>
+                <h3 className="font-display text-base font-semibold text-[#ece8e1]">Google Books API</h3>
+                <p className="mt-2 font-mono text-xs leading-relaxed text-[#ece8e1]/50">
+                  Unlocks live volume queries across millions of published books, literature, and author catalogs.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-[#ece8e1]/10 bg-[#080a10] p-5">
+                <span className="inline-flex rounded-lg bg-[#e8a84a]/10 p-2 text-[#e8a84a] mb-3 text-lg">💻</span>
+                <h3 className="font-display text-base font-semibold text-[#ece8e1]">GitHub REST API</h3>
+                <p className="mt-2 font-mono text-xs leading-relaxed text-[#ece8e1]/50">
+                  Queries active open-source software repositories, developer tools, and AI libraries matching your tech interests.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-[#ece8e1]/10 bg-[#080a10] p-5">
+                <span className="inline-flex rounded-lg bg-[#e8a84a]/10 p-2 text-[#e8a84a] mb-3 text-lg">📰</span>
+                <h3 className="font-display text-base font-semibold text-[#ece8e1]">NewsAPI & HackerNews</h3>
+                <p className="mt-2 font-mono text-xs leading-relaxed text-[#ece8e1]/50">
+                  Pulls breaking articles from 80,000+ global news outlets and real-time trending HackerNews discussions 24/7.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-[#ece8e1]/10 bg-[#080a10] p-5">
+                <span className="inline-flex rounded-lg bg-[#e8a84a]/10 p-2 text-[#e8a84a] mb-3 text-lg">🔒</span>
+                <h3 className="font-display text-base font-semibold text-[#ece8e1]">100% Local BYOK Storage</h3>
+                <p className="mt-2 font-mono text-xs leading-relaxed text-[#ece8e1]/50">
+                  All API keys stay stored strictly in your local browser IndexedDB — never transmitted to central servers.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Installation Section */}
         <section id="install" className="relative px-6 pb-28 lg:px-10">
           <div className="mx-auto max-w-5xl">
