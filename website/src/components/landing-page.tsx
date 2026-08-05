@@ -12,6 +12,9 @@ import {
   FileArchive,
   Monitor,
   KeyRound,
+  Cpu,
+  Bot,
+  Terminal,
 } from "lucide-react";
 import HeroAsciiOne from "@/components/ui/hero-ascii-one";
 
@@ -35,6 +38,16 @@ const features = [
     icon: Eye,
     title: "Explainable ranking",
     body: "Every pick carries a reasoning trail powered by optional Groq LLM. Rejected candidates get a Why Not? so you know what the model did.",
+  },
+  {
+    icon: Cpu,
+    title: "Native MCP Integration",
+    body: "Built-in Model Context Protocol (MCP) server lets Claude Desktop, Cursor, or local AI tools query your interest profile directly.",
+  },
+  {
+    icon: Bot,
+    title: "Bring Your Own Key (BYOK)",
+    body: "Use your own keys for Groq, TMDB, Google Books, GitHub, and NewsAPI. Your keys stay in local IndexedDB — never on our servers.",
   },
 ];
 
@@ -101,7 +114,7 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="grid gap-x-12 gap-y-14 sm:grid-cols-2">
+            <div className="grid gap-x-12 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
               {features.map(({ icon: Icon, title, body }) => (
                 <article key={title}>
                   <div className="mb-4 text-[#e8a84a]">
@@ -115,6 +128,36 @@ export default function LandingPage() {
                   </p>
                 </article>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* MCP Capability Showcase Section */}
+        <section className="relative px-6 pb-20 lg:px-10">
+          <div className="mx-auto max-w-5xl">
+            <div className="rounded-3xl border border-[#e8a84a]/25 bg-[#050505]/70 p-8 backdrop-blur-md lg:p-12">
+              <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+                <div className="max-w-xl">
+                  <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#e8a84a]/30 bg-[#e8a84a]/10 px-3 py-1 font-mono text-[11px] text-[#e8a84a]">
+                    <Cpu className="h-3.5 w-3.5" /> Model Context Protocol (MCP) Ready
+                  </div>
+                  <h3 className="font-display text-2xl font-bold tracking-tight text-[#ece8e1] sm:text-3xl lg:text-4xl">
+                    Connect your AI tools to your local interest graph.
+                  </h3>
+                  <p className="mt-4 font-mono text-xs leading-relaxed text-[#ece8e1]/60 sm:text-sm">
+                    WhatNext ships with a native MCP Server (<code className="text-[#e8a84a]">mcp-server/</code>) built on the official SDK. Enable local MCP sync in Settings and your AI tools (Claude Desktop, Cursor, local agents) can inspect your interest profile and answer <em className="text-[#ece8e1]">"What should I do next?"</em> directly in chat!
+                  </p>
+                </div>
+                <div className="shrink-0 rounded-2xl border border-[#ece8e1]/10 bg-[#0d1117] p-5 font-mono text-xs text-[#ece8e1]/80 shadow-xl">
+                  <div className="mb-2 flex items-center gap-2 text-[11px] text-[#e8a84a]">
+                    <Terminal className="h-3.5 w-3.5" /> MCP Prompt Example
+                  </div>
+                  <p className="text-[#ece8e1]/90 font-medium">"What should I do next?"</p>
+                  <p className="mt-2 text-[11px] text-[#ece8e1]/45">→ Queries <code className="text-[#e8a84a]">whatnext://interest-profile</code></p>
+                  <p className="text-[11px] text-[#ece8e1]/45">→ Runs <code className="text-[#e8a84a]">generate_recommendations</code></p>
+                  <p className="mt-2 text-[11px] text-green-400">✓ 100% Local (stdio / localhost:8787)</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>

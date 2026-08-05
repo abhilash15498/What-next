@@ -6,17 +6,30 @@
 
 ---
 
+## 🔌 Model Context Protocol (MCP) Server Built-in
+
+WhatNext? ships with a native **Model Context Protocol (MCP)** server (`mcp-server/`) built on `@modelcontextprotocol/sdk`. 
+
+When local MCP sync is enabled, any MCP-compatible AI client — such as **Claude Desktop**, **Cursor**, or local LLMs — can query your real-time local interest profile and ask *"What should I do next?"* directly inside your AI chat!
+
+![WhatNext Settings](docs/screenshots/settings.png)
+
+### MCP Resources & Tools
+- **Resources**: `whatnext://interest-profile`, `whatnext://recommendation-history`, `whatnext://saved-recommendations`, `whatnext://preferences`, `whatnext://current-context`
+- **Tools**: `generate_recommendations`, `explain_recommendation`, `update_interests`, `record_feedback`, `search_interests`
+- **Prompts**: `what-should-i-do-next`, `recommend-a-coding-project`, `recommend-a-movie`
+- **Security**: 100% local (`localhost:8787` loopback & `stdio`), opt-in sync, zero cloud transmission.
+
+---
+
 ## 📸 Interface Showcase
 
 ### Dashboard & Daily Recommendation
 ![WhatNext Dashboard](docs/screenshots/dashboard.png)
 
-### Settings & BYOK API Integrations
-![WhatNext Settings](docs/screenshots/settings.png)
-
 ---
 
-## ✨ Features
+## ✨ Key Features
 
 - **🎯 Unified 9-Category Engine**: Evaluates Movies, Books, GitHub Repos, Courses, Side Projects, Fitness, Career, News, and Productivity Tools in parallel.
 - **⚡ Live Data Providers (BYOK)**: Fetch real-time up-to-date recommendations using optional API keys:
@@ -25,11 +38,11 @@
   - **GitHub API**: Trending repositories matching your development interests.
   - **NewsAPI**: Personalised headlines and tech digests.
 - **🤖 Groq LLM Reasoning**: Integrates Groq (`llama-3.3-70b-versatile`) via BYOK to generate personalised, natural-language *"Why Now?"* and *"AI Reasoning"* explanations for top recommendations.
+- **🔌 Native MCP Integration**: Connect your interest profile directly to Claude Desktop, Cursor, or AI clients via Model Context Protocol.
 - **🔒 100% Privacy-First & Local**:
   - Interest profile, recommendation history, and feedback live entirely in browser **IndexedDB**.
   - No login, no cloud server, zero tracking.
   - Banking, payment, and login pages are automatically excluded from browsing signal collection.
-- **🔌 Local MCP Sync (Opt-In)**: Sync your context to a local Model Context Protocol (MCP) server on `localhost` so local AI tools (e.g. Claude Desktop) can query your interests safely.
 
 ---
 
