@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+:root {
+  --background: #000000;
+  --foreground: #ece8e1;
+  --signal: #e8a84a;
+  --muted: #9a958c;
+  --border: rgba(236, 232, 225, 0.12);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-signal: var(--signal);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
+  --font-display: var(--font-space-grotesk);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+::selection {
+  background: rgba(232, 168, 74, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Site-wide dotted starfield — matches the hero texture */
+.site-stars {
+  background-color: #000000;
+  background-image:
+    radial-gradient(1.2px 1.2px at 8px 12px, rgba(236, 232, 225, 0.55), transparent),
+    radial-gradient(1px 1px at 28px 36px, rgba(236, 232, 225, 0.35), transparent),
+    radial-gradient(1.4px 1.4px at 48px 8px, rgba(236, 232, 225, 0.45), transparent),
+    radial-gradient(1px 1px at 68px 44px, rgba(236, 232, 225, 0.3), transparent),
+    radial-gradient(1.2px 1.2px at 18px 58px, rgba(236, 232, 225, 0.4), transparent),
+    radial-gradient(1px 1px at 58px 62px, rgba(236, 232, 225, 0.28), transparent),
+    radial-gradient(0.9px 0.9px at 38px 72px, rgba(236, 232, 225, 0.5), transparent),
+    radial-gradient(1.1px 1.1px at 78px 22px, rgba(236, 232, 225, 0.38), transparent);
+  background-size: 88px 80px;
+  background-repeat: repeat;
+}
+
+.site-stars::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 14px 20px, rgba(236, 232, 225, 0.22), transparent),
+    radial-gradient(1.3px 1.3px at 54px 50px, rgba(236, 232, 225, 0.18), transparent),
+    radial-gradient(0.8px 0.8px at 34px 4px, rgba(236, 232, 225, 0.25), transparent),
+    radial-gradient(1px 1px at 74px 70px, rgba(236, 232, 225, 0.15), transparent);
+  background-size: 96px 92px;
+  background-repeat: repeat;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* Hide Unicorn Studio watermark / badge (legacy embeds) */
+a[href*="unicorn.studio"],
+button[title*="unicorn" i],
+div[title*="Made with" i] {
+  display: none !important;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.9s ease-out both;
+}
+
+.animate-fade-up-delay {
+  animation: fade-up 0.9s ease-out 0.15s both;
+}
+
+.animate-fade-up-delay-2 {
+  animation: fade-up 0.9s ease-out 0.3s both;
+}
