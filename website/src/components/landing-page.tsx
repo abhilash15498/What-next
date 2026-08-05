@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Download,
   Shield,
@@ -9,6 +10,8 @@ import {
   FolderOpen,
   Puzzle,
   FileArchive,
+  Monitor,
+  KeyRound,
 } from "lucide-react";
 import HeroAsciiOne from "@/components/ui/hero-ascii-one";
 
@@ -54,6 +57,8 @@ const installSteps = [
 ];
 
 export default function LandingPage() {
+  const [activeTab, setActiveTab] = useState<"dashboard" | "settings">("dashboard");
+
   const scrollToInstall = () => {
     document.getElementById("install")?.scrollIntoView({ behavior: "smooth" });
   };
@@ -80,7 +85,8 @@ export default function LandingPage() {
       <HeroAsciiOne onDownload={handleDownloadZip} onLearnMore={scrollToFeatures} />
 
       <div className="relative">
-        <section id="features" className="relative px-6 pt-10 pb-28 lg:px-10 lg:pt-6">
+        {/* Features Section */}
+        <section id="features" className="relative px-6 pt-10 pb-20 lg:px-10 lg:pt-6">
           <div className="mx-auto max-w-5xl">
             <div className="mb-16 max-w-xl">
               <p className="mb-4 font-mono text-[10px] tracking-[0.28em] text-[#e8a84a] uppercase">
@@ -113,6 +119,79 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Demo / Screenshots Section */}
+        <section className="relative px-6 pb-28 lg:px-10">
+          <div className="mx-auto max-w-5xl">
+            <div className="mb-10 max-w-xl">
+              <p className="mb-4 font-mono text-[10px] tracking-[0.28em] text-[#e8a84a] uppercase">
+                Interface Preview
+              </p>
+              <h2 className="font-display text-3xl leading-tight font-bold tracking-tight text-[#ece8e1] sm:text-4xl lg:text-5xl">
+                Designed for absolute clarity.
+              </h2>
+              <p className="mt-4 font-mono text-sm leading-relaxed text-[#ece8e1]/55 lg:text-base">
+                A clean, dark interface built to guide your focus, display confidence scores, and deliver AI-powered reasoning.
+              </p>
+            </div>
+
+            {/* Tab Controls */}
+            <div className="mb-6 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setActiveTab("dashboard")}
+                className={`inline-flex items-center gap-2 rounded-full border px-5 py-2.5 font-mono text-xs transition-colors ${
+                  activeTab === "dashboard"
+                    ? "border-[#e8a84a] bg-[#e8a84a]/10 text-[#e8a84a]"
+                    : "border-[#ece8e1]/15 text-[#ece8e1]/60 hover:border-[#ece8e1]/30 hover:text-[#ece8e1]"
+                }`}
+              >
+                <Monitor className="h-3.5 w-3.5" />
+                Dashboard View
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("settings")}
+                className={`inline-flex items-center gap-2 rounded-full border px-5 py-2.5 font-mono text-xs transition-colors ${
+                  activeTab === "settings"
+                    ? "border-[#e8a84a] bg-[#e8a84a]/10 text-[#e8a84a]"
+                    : "border-[#ece8e1]/15 text-[#ece8e1]/60 hover:border-[#ece8e1]/30 hover:text-[#ece8e1]"
+                }`}
+              >
+                <KeyRound className="h-3.5 w-3.5" />
+                Settings & API Keys
+              </button>
+            </div>
+
+            {/* Screenshot Frame */}
+            <div className="overflow-hidden rounded-2xl border border-[#ece8e1]/15 bg-[#050505]/80 shadow-2xl backdrop-blur-md">
+              <div className="flex items-center gap-2 border-b border-[#ece8e1]/10 bg-[#0d1117] px-4 py-3">
+                <div className="h-3 w-3 rounded-full bg-red-500/80" />
+                <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
+                <div className="h-3 w-3 rounded-full bg-green-500/80" />
+                <span className="ml-2 font-mono text-[11px] text-[#ece8e1]/40">
+                  {activeTab === "dashboard" ? "WhatNext? Dashboard — chrome-extension://whatnext/newtab" : "WhatNext? Settings — chrome-extension://whatnext/options"}
+                </span>
+              </div>
+              <div className="p-2 sm:p-4">
+                {activeTab === "dashboard" ? (
+                  <img
+                    src="/screenshots/dashboard.png"
+                    alt="WhatNext Dashboard Screenshot"
+                    className="w-full rounded-xl border border-[#ece8e1]/10 object-cover"
+                  />
+                ) : (
+                  <img
+                    src="/screenshots/settings.png"
+                    alt="WhatNext Settings Screenshot"
+                    className="w-full rounded-xl border border-[#ece8e1]/10 object-cover"
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Installation Section */}
         <section id="install" className="relative px-6 pb-28 lg:px-10">
           <div className="mx-auto max-w-5xl">
             <div className="mb-14 max-w-xl">

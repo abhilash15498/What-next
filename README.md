@@ -1,55 +1,83 @@
-# WhatNext?
+# WhatNext? — Stop Scrolling. Start Doing.
 
-**Stop Scrolling. Start Doing.**
+![WhatNext Banner](docs/screenshots/promo.png)
 
-WhatNext? is a privacy-first Chrome extension that answers one question every time you open a new tab:
-
-> *Based on everything I currently know about you, what's the single most valuable thing you should do next?*
-
-It's not a movie recommender, or a product recommender, or a course recommender — it's all of them, unified. Movies, books, GitHub repos, courses, side projects, fitness, career moves, tools, news: WhatNext ranks candidates from every category against one shared interest model and hands you **one** answer, with an explanation you can actually read.
-
-Everything runs and stores data locally in your browser. There's no login, no cloud account, and no backend server that WhatNext controls.
+> **WhatNext?** is an AI-powered, privacy-first, category-independent Chrome extension that tells you the **single most valuable thing to do next** — movies, books, GitHub repos, courses, coding projects, fitness, career, tools, and news — ranked against one shared local interest model.
 
 ---
 
-## What's in this repo
+## 📸 Interface Showcase
 
-This is an npm workspaces monorepo with three real, working pieces:
+### Dashboard & Daily Recommendation
+![WhatNext Dashboard](docs/screenshots/dashboard.png)
 
-| Package | What it is |
+### Settings & BYOK API Integrations
+![WhatNext Settings](docs/screenshots/settings.png)
+
+---
+
+## ✨ Features
+
+- **🎯 Unified 9-Category Engine**: Evaluates Movies, Books, GitHub Repos, Courses, Side Projects, Fitness, Career, News, and Productivity Tools in parallel.
+- **⚡ Live Data Providers (BYOK)**: Fetch real-time up-to-date recommendations using optional API keys:
+  - **TMDB**: Live popular movies and TV shows matching your interest tags.
+  - **Google Books**: Targeted book discovery based on your top reading topics.
+  - **GitHub API**: Trending repositories matching your development interests.
+  - **NewsAPI**: Personalised headlines and tech digests.
+- **🤖 Groq LLM Reasoning**: Integrates Groq (`llama-3.3-70b-versatile`) via BYOK to generate personalised, natural-language *"Why Now?"* and *"AI Reasoning"* explanations for top recommendations.
+- **🔒 100% Privacy-First & Local**:
+  - Interest profile, recommendation history, and feedback live entirely in browser **IndexedDB**.
+  - No login, no cloud server, zero tracking.
+  - Banking, payment, and login pages are automatically excluded from browsing signal collection.
+- **🔌 Local MCP Sync (Opt-In)**: Sync your context to a local Model Context Protocol (MCP) server on `localhost` so local AI tools (e.g. Claude Desktop) can query your interests safely.
+
+---
+
+## 📦 Quick Installation (No Build Tools Required)
+
+1. Download the latest `whatnext-extension.zip` from our website or repository.
+2. Unzip the file into a folder on your computer.
+3. Open Chrome and navigate to `chrome://extensions`.
+4. Enable **Developer mode** in the top-right corner.
+5. Click **Load unpacked** and select the unzipped folder.
+
+---
+
+## 🏗️ Monorepo Architecture
+
+WhatNext? is structured as an `npm` workspace monorepo:
+
+| Package / Folder | Purpose |
 |---|---|
-| [`packages/core`](packages/core) | Storage-agnostic recommendation engine: interest modeling, 9 category providers, ranking, explanations, timeline, digest. Pure TypeScript, zero IO dependencies. |
-| [`extension`](extension) | The Chrome MV3 extension itself — background worker, content script, popup, options page, and a full new-tab dashboard. |
-| [`mcp-server`](mcp-server) | A local Model Context Protocol server that exposes your interest profile and recommendation history to any MCP-compatible AI client (e.g. Claude Desktop), synced from the extension only if you opt in. |
+| [`core`](core) | Storage-agnostic core engine: interest profile modeling, providers, multi-factor ranking, timeline generator, and Groq LLM enrichment. Pure TypeScript. |
+| [`extension`](extension) | Chrome Extension (MV3): background worker, content script for signal capture, popup UI, settings panel, and dashboard. |
+| [`mcp-server`](mcp-server) | Standalone local Model Context Protocol (MCP) server for local AI client interoperability. |
+| [`website`](website) | Next.js landing page with direct extension zip download and setup instructions. |
 
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for how the pieces fit together, and [`docs/FOLDER_STRUCTURE.md`](docs/FOLDER_STRUCTURE.md) for a full file tree.
+---
 
-## Quick start
+## 🛠️ Development & Building from Source
 
 ```bash
+# Clone the repository
+git clone https://github.com/abhilash15498/What-next.git
+cd What-next
+
+# Install dependencies
 npm install
+
+# Build core and extension
 npm run build
+
+# Start extension dev server
+npm run dev
+
+# Start landing page website dev server
+npm run dev:web
 ```
 
-Then load `extension/dist` as an unpacked extension in Chrome (`chrome://extensions` → Developer mode → Load unpacked). Full steps in [`docs/INSTALLATION.md`](docs/INSTALLATION.md).
+---
 
-## Why it's not random
+## 📜 License
 
-Every recommendation carries:
-
-- **A confidence score** (0-100)
-- **A "Why Now?"** explanation, generated from the actual interests it matched and your actual recent activity
-- **DNA metadata** — difficulty, estimated time, category, tags, popularity, freshness, interest match
-- **An AI reasoning trail** — how many candidates were evaluated and why this one ranked where it did
-
-Rejected candidates get a **"Why Not?"** explanation too, visible in the Feed tab.
-
-## Privacy model
-
-- All data — your interest profile, recommendation history, feedback, saved items — lives in this browser's IndexedDB. Nothing is sent anywhere by default.
-- The content script only ever reads `document.title`, a meta description, and the hostname — never page body, form fields, or input values — and refuses to run on pages with a password field.
-- A built-in domain blocklist (banking, government, payment, auth, email) is enforced in the background worker before any signal is stored.
-- MCP sync (letting a local AI client see your profile) is **off by default** and, when enabled, only ever talks to `localhost`.
-- An optional "enhance reasoning with Claude" feature in Settings uses your own Anthropic API key, called directly from your browser — WhatNext has no server of its own that ever sees that key or your data.
-
-See [`docs/PORTFOLIO.md`](docs/PORTFOLIO.md) for the elevator pitch, and [`docs/FUTURE_IMPROVEMENTS.md`](docs/FUTURE_IMPROVEMENTS.md) for an honest list of what's intentionally scoped out of v1.
+Open source under the [MIT License](LICENSE).
