@@ -1,5 +1,6 @@
 import type { Candidate, InterestProfile, Preferences } from '../types.js';
 import type { Provider } from './types.js';
+import { topInterests } from '../interests/profile.js';
 
 // ── Static fallback ────────────────────────────────────────────────────────────
 
@@ -11,40 +12,12 @@ const STATIC_ITEMS: Candidate[] = [
       'Read through the reference TypeScript SDK for MCP — resources, tools, and prompts implemented end to end.',
     url: 'https://github.com/modelcontextprotocol/typescript-sdk',
     category: 'github',
-    tags: ['mcp', 'ai', 'programming', 'browser-extensions'],
+    tags: ['mcp', 'ai', 'programming'],
     difficulty: 'intermediate',
     estimatedMinutes: 60,
-    popularity: 0.75,
+    popularity: 0.85,
     addedAt: Date.parse('2025-03-01'),
     suitedWindows: ['now', 'tomorrow'],
-  },
-  {
-    id: 'gh_qiskit',
-    title: 'Explore Qiskit on GitHub',
-    description:
-      "IBM's open-source quantum computing SDK — browse the tutorials folder for runnable circuit examples.",
-    url: 'https://github.com/Qiskit/qiskit',
-    category: 'github',
-    tags: ['quantum_computing', 'programming'],
-    difficulty: 'intermediate',
-    estimatedMinutes: 45,
-    popularity: 0.72,
-    addedAt: Date.parse('2025-02-01'),
-    suitedWindows: ['now', 'tomorrow'],
-  },
-  {
-    id: 'gh_awesome_chrome_extensions',
-    title: "Browse 'awesome-chrome-extension'",
-    description:
-      'A curated list of Manifest V3 extension examples — good pattern reference for background workers and CSP handling.',
-    url: 'https://github.com/topics/chrome-extension',
-    category: 'github',
-    tags: ['browser-extensions', 'programming'],
-    difficulty: 'beginner',
-    estimatedMinutes: 30,
-    popularity: 0.68,
-    addedAt: Date.parse('2025-04-01'),
-    suitedWindows: ['now'],
   },
   {
     id: 'gh_transformers',
@@ -60,37 +33,9 @@ const STATIC_ITEMS: Candidate[] = [
     addedAt: Date.parse('2024-12-01'),
     suitedWindows: ['tomorrow', 'weekend'],
   },
-  {
-    id: 'gh_pennylane',
-    title: 'Explore PennyLane on GitHub',
-    description:
-      'Cross-platform library for differentiable quantum programming — good next step after Qiskit basics.',
-    url: 'https://github.com/PennyLaneAI/pennylane',
-    category: 'github',
-    tags: ['quantum_computing', 'ai'],
-    difficulty: 'advanced',
-    estimatedMinutes: 60,
-    popularity: 0.6,
-    addedAt: Date.parse('2025-01-20'),
-    suitedWindows: ['tomorrow', 'weekend'],
-  },
-  {
-    id: 'gh_dexie',
-    title: 'Explore Dexie.js on GitHub',
-    description:
-      'The IndexedDB wrapper this very project uses — read the docs folder to understand live queries.',
-    url: 'https://github.com/dexie/Dexie.js',
-    category: 'github',
-    tags: ['programming', 'web_dev'],
-    difficulty: 'beginner',
-    estimatedMinutes: 25,
-    popularity: 0.55,
-    addedAt: Date.parse('2025-05-10'),
-    suitedWindows: ['now'],
-  },
 ];
 
-// ── GitHub Search live fetch ──────────────────────────────────────────────────
+// ── GitHub Search live fetch (Keyless or Token) ─────────────────────────────
 
 interface GithubRepo {
   id: number;
@@ -107,17 +52,17 @@ interface GithubRepo {
 
 function topInterestQuery(profile: InterestProfile): string {
   const sorted = Object.values(profile)
+    .filter((i) => i.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 3)
     .map((i) => i.name.replace(/_/g, ' '));
-  return sorted.length > 0 ? sorted.join(' ') : 'programming';
+  return sorted.length > 0 ? sorted.join(' ') : 'awesome';
 }
 
 function deriveDifficulty(repo: GithubRepo): Candidate['difficulty'] {
-  const stars = repo.stargazers_count;
   const lang = repo.language?.toLowerCase() ?? '';
   if (lang === 'rust' || lang === 'haskell' || lang === 'c++') return 'advanced';
-  if (stars > 20000) return 'intermediate';
+  if (repo.stargazers_count > 10000) return 'intermediate';
   return 'beginner';
 }
 
@@ -127,16 +72,18 @@ async function fetchGithubCandidates(
 ): Promise<Candidate[]> {
   const q = encodeURIComponent(topInterestQuery(profile));
   const url = `https://api.github.com/search/repositories?q=${q}+is:public&sort=stars&order=desc&per_page=12`;
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-    },
-  });
+  const headers: Record<string, string> = {
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'WhatNext-App',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(url, { headers });
   if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
-  const data = (await res.json()) as { items: GithubRepo[] };
-  if (!data.items?.length) return STATIC_ITEMS;
+  const data = (await res.json()) as { items?: GithubRepo[] };
+  if (!data.items?.length) return [];
 
   const maxStars = Math.max(...data.items.map((r) => r.stargazers_count), 1);
 
@@ -144,10 +91,7 @@ async function fetchGithubCandidates(
     const tags: string[] = ['programming'];
     const topics = repo.topics ?? [];
     if (topics.some((t) => t.includes('ai') || t.includes('ml') || t.includes('machine-learning'))) tags.push('ai');
-    if (topics.some((t) => t.includes('quantum'))) tags.push('quantum_computing');
     if (topics.some((t) => t.includes('web') || t.includes('frontend'))) tags.push('web_dev');
-    if (topics.some((t) => t.includes('extension') || t.includes('chrome'))) tags.push('browser-extensions');
-    if (repo.language === 'TypeScript' || repo.language === 'JavaScript') tags.push('web_dev');
 
     return {
       id: `gh_live_${repo.id}`,
@@ -155,7 +99,7 @@ async function fetchGithubCandidates(
       description:
         repo.description
           ? repo.description.slice(0, 200) + (repo.description.length > 200 ? '…' : '')
-          : `A popular ${repo.language ?? 'code'} repository with ${repo.stargazers_count.toLocaleString()} stars.`,
+          : `A popular ${repo.language ?? 'open source'} repository with ${repo.stargazers_count.toLocaleString()} stars.`,
       url: repo.html_url,
       category: 'github' as const,
       tags: [...new Set(tags)],
@@ -174,13 +118,35 @@ export const githubProvider: Provider = {
   category: 'github',
   name: 'GitHub Repository Provider (live)',
   async getCandidates(prefs: Preferences, profile: InterestProfile): Promise<Candidate[]> {
-    if (prefs.githubToken?.trim()) {
-      try {
-        return await fetchGithubCandidates(prefs.githubToken.trim(), profile);
-      } catch {
-        // Fall through to static list
-      }
+    try {
+      const fetched = await fetchGithubCandidates(prefs.githubToken?.trim() ?? '', profile);
+      if (fetched.length > 0) return fetched;
+    } catch {
+      // Fall through
     }
-    return STATIC_ITEMS;
+
+    const active = topInterests(profile, 5).filter((i) => i.score > 0);
+    const dynamicItems: Candidate[] = [];
+
+    for (const interest of active) {
+      const tag = interest.name;
+      const displayTag = tag.replace(/_/g, ' ');
+
+      dynamicItems.push({
+        id: `gh_dynamic_${tag}`,
+        title: `Browse top open-source ${displayTag} repos on GitHub`,
+        description: `Discover active repositories, tools, and libraries built around ${displayTag}.`,
+        url: `https://github.com/search?q=${encodeURIComponent(displayTag)}&type=repositories`,
+        category: 'github',
+        tags: [tag, 'programming'],
+        difficulty: 'intermediate',
+        estimatedMinutes: 35,
+        popularity: 0.85,
+        addedAt: Date.now(),
+        suitedWindows: ['now', 'tomorrow'],
+      });
+    }
+
+    return [...dynamicItems, ...STATIC_ITEMS];
   },
 };

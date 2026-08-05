@@ -2,6 +2,8 @@ import type { Candidate, InterestProfile, Preferences } from '../types.js';
 import type { Provider } from './types.js';
 import { topInterests } from '../interests/profile.js';
 
+// ── Static fallback ────────────────────────────────────────────────────────────
+
 const STATIC_TRAVEL_ITEMS: Candidate[] = [
   {
     id: 'travel_weekend_getaway',
@@ -31,28 +33,58 @@ const STATIC_TRAVEL_ITEMS: Candidate[] = [
     addedAt: Date.parse('2025-02-01'),
     suitedWindows: ['weekend'],
   },
-  {
-    id: 'travel_cultural_itinerary',
-    title: 'Explore cultural & historical travel itineraries',
-    description:
-      'Curate a custom travel itinerary exploring art museums, heritage sites, and architectural landmarks.',
-    url: 'https://www.wikivoyage.org',
-    category: 'travel',
-    tags: ['travel', 'culture', 'history'],
-    difficulty: 'beginner',
-    estimatedMinutes: 40,
-    popularity: 0.8,
-    addedAt: Date.parse('2025-01-15'),
-    suitedWindows: ['tonight', 'weekend'],
-  },
 ];
 
 const PURE_MOVIE_TAGS = new Set(['bollywood', 'anime', 'movies', 'film', 'cinema']);
+
+interface WikiSearchResult {
+  pageid: number;
+  title: string;
+  snippet: string;
+}
+
+async function fetchWikiTravelCandidates(profile: InterestProfile): Promise<Candidate[]> {
+  const topTag = topInterests(profile, 1)[0]?.name ?? 'travel';
+  if (PURE_MOVIE_TAGS.has(topTag)) return [];
+
+  const query = encodeURIComponent(`${topTag.replace(/_/g, ' ')} travel tourism destination`);
+  const url = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${query}&utf8=1&format=json&origin=*`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Wiki API error');
+  const data = (await res.json()) as { query?: { search?: WikiSearchResult[] } };
+  if (!data.query?.search?.length) return [];
+
+  return data.query.search.slice(0, 8).map((item) => {
+    const cleanSnippet = item.snippet.replace(/<[^>]+>/g, '');
+    return {
+      id: `wiki_travel_${item.pageid}`,
+      title: `Explore Destination: ${item.title}`,
+      description: cleanSnippet.length > 180 ? cleanSnippet.slice(0, 177) + '…' : cleanSnippet,
+      url: `https://en.wikipedia.org/wiki/${encodeURIComponent(item.title)}`,
+      category: 'travel',
+      tags: [topTag, 'travel'],
+      difficulty: 'beginner',
+      estimatedMinutes: 25,
+      popularity: 0.86,
+      addedAt: Date.now(),
+      suitedWindows: ['weekend', 'tonight'],
+    };
+  });
+}
+
+// ── Provider ───────────────────────────────────────────────────────────────────
 
 export const travelProvider: Provider = {
   category: 'travel',
   name: 'Travel & Trip Ideas Provider',
   async getCandidates(_prefs: Preferences, profile: InterestProfile): Promise<Candidate[]> {
+    try {
+      const fetched = await fetchWikiTravelCandidates(profile);
+      if (fetched.length > 0) return fetched;
+    } catch {
+      // Fall through
+    }
+
     const active = topInterests(profile, 5).filter((i) => i.score > 0);
     const dynamicItems: Candidate[] = [];
 

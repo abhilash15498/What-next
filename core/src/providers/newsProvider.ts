@@ -1,7 +1,17 @@
 import type { Candidate, InterestProfile, Preferences } from '../types.js';
 import type { Provider } from './types.js';
+import { topInterests } from '../interests/profile.js';
 
-// ── Static fallback ────────────────────────────────────────────────────────────
+// ── HackerNews & Public RSS/Reddit live fetch ───────────────────────────────
+
+interface HnItem {
+  id: number;
+  title: string;
+  url?: string;
+  score?: number;
+  time?: number;
+  by?: string;
+}
 
 const STATIC_ITEMS: Candidate[] = [
   {
@@ -18,38 +28,12 @@ const STATIC_ITEMS: Candidate[] = [
     suitedWindows: ['now', 'tonight'],
   },
   {
-    id: 'news_quantum_computing_progress',
-    title: 'Catch up on recent quantum hardware milestones',
-    description:
-      'Coverage of recent qubit-count and error-correction progress across major quantum computing labs.',
-    category: 'news',
-    tags: ['quantum_computing'],
-    difficulty: 'beginner',
-    estimatedMinutes: 10,
-    popularity: 0.5,
-    addedAt: Date.parse('2025-07-20'),
-    suitedWindows: ['now', 'tonight'],
-  },
-  {
-    id: 'news_football_transfer_window',
-    title: 'Catch up on the latest transfer window news',
-    description:
-      'Quick roundup of confirmed transfers and rumors involving your followed clubs and players.',
-    category: 'news',
-    tags: ['football'],
-    difficulty: 'beginner',
-    estimatedMinutes: 10,
-    popularity: 0.65,
-    addedAt: Date.parse('2025-07-28'),
-    suitedWindows: ['now', 'tonight'],
-  },
-  {
     id: 'news_startup_funding_digest',
-    title: "Read this week's startup funding digest",
+    title: "Read this week's tech & startup funding digest",
     description:
       'Notable seed and Series A rounds, with a short note on what problem each company is solving.',
     category: 'news',
-    tags: ['entrepreneurship'],
+    tags: ['entrepreneurship', 'finance'],
     difficulty: 'beginner',
     estimatedMinutes: 12,
     popularity: 0.55,
@@ -58,95 +42,90 @@ const STATIC_ITEMS: Candidate[] = [
   },
 ];
 
-// ── NewsAPI live fetch ─────────────────────────────────────────────────────────
+async function fetchLiveHackerNews(profile: InterestProfile): Promise<Candidate[]> {
+  const topIdsRes = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json');
+  if (!topIdsRes.ok) throw new Error('HN fetch error');
+  const ids = ((await topIdsRes.json()) as number[]).slice(0, 15);
 
-interface NewsApiArticle {
-  title: string;
-  description: string | null;
-  url: string;
-  publishedAt: string;
-  source: { name: string };
-}
+  const items = await Promise.all(
+    ids.map(async (id) => {
+      try {
+        const itemRes = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`);
+        if (!itemRes.ok) return null;
+        return (await itemRes.json()) as HnItem;
+      } catch {
+        return null;
+      }
+    }),
+  );
 
-/** Map interest tags → NewsAPI query keywords */
-const TAG_KEYWORD_MAP: Record<string, string> = {
-  ai: 'artificial intelligence OR machine learning',
-  quantum_computing: 'quantum computing',
-  programming: 'software development OR programming',
-  web_dev: 'web development',
-  entrepreneurship: 'startup funding OR entrepreneurship',
-  football: 'football OR soccer',
-  fitness: 'fitness OR health',
-  career: 'technology career OR software jobs',
-  gaming: 'video games OR gaming',
-  productivity: 'productivity technology',
-};
+  const valid = items.filter((i): i is HnItem => i !== null && Boolean(i.title && i.url));
+  const activeTags = topInterests(profile, 5).map((t) => t.name);
 
-function buildNewsQuery(profile: InterestProfile): string {
-  const topTags = Object.values(profile)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 2)
-    .map((i) => TAG_KEYWORD_MAP[i.name] ?? i.name.replace(/_/g, ' '));
-  return topTags.length > 0 ? topTags.join(' OR ') : 'technology';
-}
+  return valid.slice(0, 10).map((hn) => {
+    const text = hn.title.toLowerCase();
+    const tags: string[] = ['news'];
+    if (text.includes('ai') || text.includes('llm') || text.includes('gpt')) tags.push('ai');
+    if (text.includes('code') || text.includes('dev') || text.includes('python') || text.includes('js')) tags.push('programming');
+    if (text.includes('stock') || text.includes('market') || text.includes('money')) tags.push('finance', 'stock_market');
+    if (text.includes('cooking') || text.includes('recipe') || text.includes('food')) tags.push('cooking', 'food');
 
-async function fetchNewsApiCandidates(
-  apiKey: string,
-  profile: InterestProfile,
-): Promise<Candidate[]> {
-  const q = encodeURIComponent(buildNewsQuery(profile));
-  const url = `https://newsapi.org/v2/everything?q=${q}&sortBy=publishedAt&language=en&pageSize=10&apiKey=${apiKey}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`NewsAPI error: ${res.status}`);
-  const data = (await res.json()) as { articles?: NewsApiArticle[]; status: string };
-  if (data.status !== 'ok' || !data.articles?.length) return STATIC_ITEMS;
+    // Attach active user tags to match profile
+    for (const tag of activeTags) {
+      if (text.includes(tag.replace(/_/g, ' '))) tags.push(tag);
+    }
 
-  return data.articles
-    .filter((a) => a.title && a.title !== '[Removed]')
-    .slice(0, 8)
-    .map((article, i) => {
-      // Derive tags from headline keywords
-      const combined = `${article.title} ${article.description ?? ''}`.toLowerCase();
-      const tags: string[] = ['news'];
-      if (combined.includes('ai') || combined.includes('machine learning') || combined.includes('llm')) tags.push('ai');
-      if (combined.includes('quantum')) tags.push('quantum_computing');
-      if (combined.includes('startup') || combined.includes('funding') || combined.includes('founder')) tags.push('entrepreneurship');
-      if (combined.includes('football') || combined.includes('soccer') || combined.includes('premier league')) tags.push('football');
-      if (combined.includes('fitness') || combined.includes('health')) tags.push('fitness');
-      if (combined.includes('programming') || combined.includes('developer') || combined.includes('software')) tags.push('programming');
-
-      return {
-        id: `news_live_${Date.now()}_${i}`,
-        title: `Read: ${article.title.slice(0, 80)}${article.title.length > 80 ? '…' : ''}`,
-        description:
-          article.description
-            ? article.description.slice(0, 200) + (article.description.length > 200 ? '…' : '')
-            : `From ${article.source.name} — a recent article matching your interests.`,
-        url: article.url,
-        category: 'news' as const,
-        tags: [...new Set(tags)],
-        difficulty: 'beginner' as const,
-        estimatedMinutes: 8,
-        popularity: 0.6,
-        addedAt: article.publishedAt ? Date.parse(article.publishedAt) : Date.now(),
-        suitedWindows: ['now', 'tonight'],
-      };
-    });
+    return {
+      id: `hn_live_${hn.id}`,
+      title: `Read: ${hn.title}`,
+      description: `Trending on HackerNews (${hn.score ?? 50} points) by ${hn.by ?? 'community'}.`,
+      url: hn.url ?? `https://news.ycombinator.com/item?id=${hn.id}`,
+      category: 'news',
+      tags: [...new Set(tags)],
+      difficulty: 'beginner',
+      estimatedMinutes: 10,
+      popularity: Math.min((hn.score ?? 50) / 400, 1),
+      addedAt: hn.time ? hn.time * 1000 : Date.now(),
+      suitedWindows: ['now', 'tonight'],
+    };
+  });
 }
 
 // ── Provider ───────────────────────────────────────────────────────────────────
 
 export const newsProvider: Provider = {
   category: 'news',
-  name: 'News Provider (NewsAPI)',
-  async getCandidates(prefs: Preferences, profile: InterestProfile): Promise<Candidate[]> {
-    if (prefs.newsApiKey?.trim()) {
-      try {
-        return await fetchNewsApiCandidates(prefs.newsApiKey.trim(), profile);
-      } catch {
-        // Fall through to static list
-      }
+  name: 'News & Tech Stories Provider (live)',
+  async getCandidates(_prefs: Preferences, profile: InterestProfile): Promise<Candidate[]> {
+    try {
+      const fetched = await fetchLiveHackerNews(profile);
+      if (fetched.length > 0) return fetched;
+    } catch {
+      // Fall through
     }
-    return STATIC_ITEMS;
+
+    const active = topInterests(profile, 5).filter((i) => i.score > 0);
+    const dynamicItems: Candidate[] = [];
+
+    for (const interest of active) {
+      const tag = interest.name;
+      const displayTag = tag.replace(/_/g, ' ');
+
+      dynamicItems.push({
+        id: `news_dynamic_${tag}`,
+        title: `Read latest news & updates on ${displayTag}`,
+        description: `Catch up on trending news articles, industry updates, and discussions about ${displayTag}.`,
+        url: `https://news.google.com/search?q=${encodeURIComponent(displayTag)}`,
+        category: 'news',
+        tags: [tag, 'news'],
+        difficulty: 'beginner',
+        estimatedMinutes: 10,
+        popularity: 0.8,
+        addedAt: Date.now(),
+        suitedWindows: ['now', 'tonight'],
+      });
+    }
+
+    return [...dynamicItems, ...STATIC_ITEMS];
   },
 };
