@@ -1,8 +1,7 @@
 import type { Candidate, InterestProfile, Preferences } from '../types.js';
 import type { Provider } from './types.js';
-import { topInterests } from '../interests/profile.js';
 
-// ── Static fallback ────────────────────────────────────────────────────────────
+// ── Static fallback for developers ─────────────────────────────────────────
 
 const STATIC_ITEMS: Candidate[] = [
   {
@@ -33,9 +32,37 @@ const STATIC_ITEMS: Candidate[] = [
     addedAt: Date.parse('2024-12-01'),
     suitedWindows: ['tomorrow', 'weekend'],
   },
+  {
+    id: 'gh_dexie',
+    title: 'Explore Dexie.js on GitHub',
+    description:
+      'A minimal IndexedDB wrapper — read the documentation and live query examples.',
+    url: 'https://github.com/dexie/Dexie.js',
+    category: 'github',
+    tags: ['programming', 'web_dev'],
+    difficulty: 'beginner',
+    estimatedMinutes: 25,
+    popularity: 0.75,
+    addedAt: Date.parse('2025-05-10'),
+    suitedWindows: ['now'],
+  },
 ];
 
-// ── GitHub Search live fetch (Keyless or Token) ─────────────────────────────
+const CODING_TAGS = new Set([
+  'programming',
+  'ai',
+  'web_dev',
+  'python',
+  'quantum_computing',
+  'mcp',
+  'tools',
+  'productivity',
+  'github',
+  'devops',
+  'rust',
+  'javascript',
+  'typescript',
+]);
 
 interface GithubRepo {
   id: number;
@@ -50,13 +77,12 @@ interface GithubRepo {
   open_issues_count: number;
 }
 
-function topInterestQuery(profile: InterestProfile): string {
-  const sorted = Object.values(profile)
-    .filter((i) => i.score > 0)
+function topCodingInterestQuery(profile: InterestProfile): string | null {
+  const matched = Object.values(profile)
+    .filter((i) => i.score > 0 && CODING_TAGS.has(i.name))
     .sort((a, b) => b.score - a.score)
-    .slice(0, 3)
     .map((i) => i.name.replace(/_/g, ' '));
-  return sorted.length > 0 ? sorted.join(' ') : 'awesome';
+  return matched.length > 0 ? matched.join(' ') : null;
 }
 
 function deriveDifficulty(repo: GithubRepo): Candidate['difficulty'] {
@@ -70,8 +96,11 @@ async function fetchGithubCandidates(
   token: string,
   profile: InterestProfile,
 ): Promise<Candidate[]> {
-  const q = encodeURIComponent(topInterestQuery(profile));
-  const url = `https://api.github.com/search/repositories?q=${q}+is:public&sort=stars&order=desc&per_page=12`;
+  const query = topCodingInterestQuery(profile);
+  if (!query) return []; // Non-coding profiles get no GitHub recommendations forced upon them
+
+  const q = encodeURIComponent(query);
+  const url = `https://api.github.com/search/repositories?q=${q}+is:public&sort=stars&order=desc&per_page=10`;
   const headers: Record<string, string> = {
     Accept: 'application/vnd.github+json',
     'User-Agent': 'WhatNext-App',
@@ -125,28 +154,7 @@ export const githubProvider: Provider = {
       // Fall through
     }
 
-    const active = topInterests(profile, 5).filter((i) => i.score > 0);
-    const dynamicItems: Candidate[] = [];
-
-    for (const interest of active) {
-      const tag = interest.name;
-      const displayTag = tag.replace(/_/g, ' ');
-
-      dynamicItems.push({
-        id: `gh_dynamic_${tag}`,
-        title: `Browse top open-source ${displayTag} repos on GitHub`,
-        description: `Discover active repositories, tools, and libraries built around ${displayTag}.`,
-        url: `https://github.com/search?q=${encodeURIComponent(displayTag)}&type=repositories`,
-        category: 'github',
-        tags: [tag, 'programming'],
-        difficulty: 'intermediate',
-        estimatedMinutes: 35,
-        popularity: 0.85,
-        addedAt: Date.now(),
-        suitedWindows: ['now', 'tomorrow'],
-      });
-    }
-
-    return [...dynamicItems, ...STATIC_ITEMS];
+    const hasCodingInterest = Object.values(profile).some((i) => i.score > 0 && CODING_TAGS.has(i.name));
+    return hasCodingInterest ? STATIC_ITEMS : [];
   },
 };

@@ -10,6 +10,7 @@ import { toolProvider } from './toolProvider.js';
 import { newsProvider } from './newsProvider.js';
 import { travelProvider } from './travelProvider.js';
 import { financeProvider } from './financeProvider.js';
+import { cookingProvider } from './cookingProvider.js';
 
 export const ALL_PROVIDERS: Provider[] = [
   movieProvider,
@@ -23,6 +24,7 @@ export const ALL_PROVIDERS: Provider[] = [
   newsProvider,
   travelProvider,
   financeProvider,
+  cookingProvider,
 ];
 
 export * from './types.js';

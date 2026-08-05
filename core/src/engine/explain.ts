@@ -20,31 +20,21 @@ export function buildWhyNow(scored: ScoredCandidate, profile: InterestProfile): 
   const { interestMatchTags, dna, candidate } = scored;
   const time = timeLabel(candidate.estimatedMinutes);
 
-  // No profile signals yet — new user
-  if (interestMatchTags.length === 0) {
-    return `We haven't built up a picture of your interests yet, so this is a curated discovery pick — it has strong general appeal (${Math.round(dna.popularity * 100)}% popularity) and only takes ${time}. Give it a try and your future recommendations will get sharper.`;
+  const activeInterests = Object.entries(profile)
+    .filter(([_, i]) => i.score > 0)
+    .map(([name, i]) => ({ tag: name, score: i.score }));
+
+  if (activeInterests.length > 0 && interestMatchTags.length > 0) {
+    const primaryTag = interestMatchTags[0].replace(/_/g, ' ');
+    return `Selected specifically for your interest in ${primaryTag}. This ${candidate.difficulty} ${candidate.category} activity takes about ${time} and matches your current preferences.`;
   }
 
-  const topTag = interestMatchTags
-    .map((t) => ({ tag: t, score: profile[t]?.score ?? 0 }))
-    .sort((a, b) => b.score - a.score)[0];
+  if (activeInterests.length > 0) {
+    const topUserTag = activeInterests.sort((a, b) => b.score - a.score)[0].tag.replace(/_/g, ' ');
+    return `You're exploring ${topUserTag} — this high-quality ${candidate.category} recommendation was selected to expand your activity mix in ${time}.`;
+  }
 
-  const rising = interestMatchTags.some((t) => profile[t]?.trend === 'rising');
-  const risingTag = interestMatchTags.find((t) => profile[t]?.trend === 'rising');
-
-  const trendClause = rising && risingTag
-    ? ` Your interest in ${risingTag.replace(/_/g, ' ')} has been rising lately —`
-    : '';
-
-  const matchClause = topTag
-    ? `"${topTag.tag.replace(/_/g, ' ')}" is your #${
-        Object.values(profile)
-          .sort((a, b) => b.score - a.score)
-          .findIndex((i) => i.name === topTag.tag) + 1
-      } tracked interest right now (score ${Math.round(topTag.score)}/100).`
-    : '';
-
-  return `${trendClause} this lines up with your interest in ${formatTagList(interestMatchTags)}. ${matchClause} It's a ${candidate.difficulty} activity at ${time} — fits your current level and available time.`.trim();
+  return `A curated discovery pick (${Math.round(dna.popularity * 100)}% popularity) taking ${time}. Interact with recommendations to personalize your engine.`;
 }
 
 export function buildWhyNot(scored: ScoredCandidate): string {
