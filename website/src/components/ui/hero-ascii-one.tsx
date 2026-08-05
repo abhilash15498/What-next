@@ -4,22 +4,10 @@ import { ArrowDown } from "lucide-react";
 import HeroBrainDiagram from "@/components/ui/hero-brain-diagram";
 
 type HeroAsciiOneProps = {
-  onDownload?: () => void;
   onLearnMore?: () => void;
 };
 
-export default function HeroAsciiOne({
-  onDownload,
-  onLearnMore,
-}: HeroAsciiOneProps) {
-  const handleDownload = () => {
-    if (onDownload) {
-      onDownload();
-      return;
-    }
-    document.getElementById("install")?.scrollIntoView({ behavior: "smooth" });
-  };
-
+export default function HeroAsciiOne({ onLearnMore }: HeroAsciiOneProps) {
   const handleLearnMore = () => {
     if (onLearnMore) {
       onLearnMore();
@@ -60,13 +48,13 @@ export default function HeroAsciiOne({
             >
               How it works
             </button>
-            <button
-              type="button"
-              onClick={handleDownload}
+            <a
+              href="/api/download"
+              download="whatnext-extension.zip"
               className="rounded-full border border-[#ece8e1]/25 px-4 py-2 font-mono text-xs tracking-wide text-[#ece8e1] transition-colors hover:border-[#ece8e1] hover:bg-[#ece8e1] hover:text-[#050505]"
             >
               Get extension
-            </button>
+            </a>
           </nav>
         </div>
       </header>
@@ -90,13 +78,13 @@ export default function HeroAsciiOne({
             </p>
 
             <div className="animate-fade-up-delay-2 mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <button
-                type="button"
-                onClick={handleDownload}
-                className="rounded-full bg-[#ece8e1] px-7 py-3 font-mono text-xs font-medium tracking-wide text-[#050505] transition-opacity hover:opacity-90 sm:text-sm"
+              <a
+                href="/api/download"
+                download="whatnext-extension.zip"
+                className="inline-flex items-center justify-center rounded-full bg-[#ece8e1] px-7 py-3 font-mono text-xs font-medium tracking-wide text-[#050505] transition-opacity hover:opacity-90 sm:text-sm"
               >
                 Download for Chrome
-              </button>
+              </a>
               <button
                 type="button"
                 onClick={handleLearnMore}

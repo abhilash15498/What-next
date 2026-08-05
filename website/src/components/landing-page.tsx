@@ -99,22 +99,13 @@ export default function LandingPage() {
     document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleDownloadZip = () => {
-    const link = document.createElement("a");
-    link.href = "/whatnext-extension.zip";
-    link.download = "whatnext-extension.zip";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    scrollToInstall();
-  };
 
   return (
     <div className="relative min-h-screen text-[#ece8e1]">
       {/* Fixed starfield behind the entire site */}
       <div aria-hidden className="site-stars pointer-events-none fixed inset-0 -z-10" />
 
-      <HeroAsciiOne onDownload={handleDownloadZip} onLearnMore={scrollToFeatures} />
+      <HeroAsciiOne onLearnMore={scrollToFeatures} />
 
       <div className="relative">
         {/* Features Section */}
@@ -354,7 +345,7 @@ export default function LandingPage() {
               </div>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <a
-                  href="/whatnext-extension.zip"
+                  href="/api/download"
                   download="whatnext-extension.zip"
                   onClick={scrollToInstall}
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-[#e8a84a] px-6 py-3 font-mono text-xs font-semibold text-[#050505] transition-opacity hover:opacity-90"
