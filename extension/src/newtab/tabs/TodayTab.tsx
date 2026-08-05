@@ -11,9 +11,18 @@ const WINDOW_LABELS: Record<TimeWindow, string> = {
   weekend: 'Weekend',
 };
 
+import { useEffect } from 'react';
+import { indexedDbStorage } from '../../lib/storage/indexedDbAdapter';
+
 export function TodayTab() {
   const { engineResult, loading, regenerate, submitFeedback, digest } = useAppData();
   const top = engineResult?.feed[0];
+
+  useEffect(() => {
+    if (top) {
+      indexedDbStorage.addRecommendations([{ ...top, status: top.status === 'pending' ? 'shown' : top.status }]);
+    }
+  }, [top]);
 
   return (
     <div className="space-y-8">

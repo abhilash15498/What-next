@@ -29,7 +29,11 @@ export function Popup() {
     const profile = await indexedDbStorage.getInterestProfile();
     await indexedDbStorage.saveInterestProfile(decayProfile(profile));
     const result = await generateRecommendations(indexedDbStorage);
-    setTop(result.feed[0] ?? null);
+    const topRec = result.feed[0] ?? null;
+    setTop(topRec);
+    if (topRec) {
+      await indexedDbStorage.addRecommendations([{ ...topRec, status: 'shown' }]);
+    }
     setCandidatesEvaluated(result.candidatesEvaluated);
     setLoading(false);
   }, []);

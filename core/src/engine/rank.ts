@@ -105,7 +105,7 @@ export function scoreCandidate(
   const nov = novelty(candidate, ctx.recentlyShownIds);
   const usefulness = estimatedUsefulness(candidate, ctx.prefs, ctx.context);
 
-  const raw =
+  let raw =
     sim.score * WEIGHTS.interestSimilarity +
     relevance * WEIGHTS.contextRelevance +
     fb * WEIGHTS.feedbackAdjustment +
@@ -113,6 +113,12 @@ export function scoreCandidate(
     nov * WEIGHTS.novelty +
     candidate.popularity * WEIGHTS.popularity +
     usefulness * WEIGHTS.estimatedUsefulness;
+
+  // If the user has active interests set, heavily penalize items with zero match
+  const activeInterestCount = Object.values(ctx.profile).filter((i) => i.score > 0).length;
+  if (activeInterestCount > 0 && sim.score === 0) {
+    raw *= 0.25;
+  }
 
   const maxPossible =
     WEIGHTS.interestSimilarity +

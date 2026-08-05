@@ -97,7 +97,7 @@ export interface Recommendation {
   window: TimeWindow;
   rank: number;
   generatedAt: number;
-  status: 'pending' | 'useful' | 'not_interested' | 'saved' | 'later' | 'dismissed';
+  status: 'pending' | 'shown' | 'useful' | 'not_interested' | 'saved' | 'later' | 'dismissed';
 }
 
 /** Explanation for a candidate that scored too low to surface. */

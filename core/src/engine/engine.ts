@@ -83,8 +83,6 @@ export async function generateRecommendations(storage: Storage): Promise<EngineR
     }
   }
 
-  await storage.addRecommendations(finalRecommendations);
-
   const timeline = buildTimeline(finalRecommendations);
 
   return {
