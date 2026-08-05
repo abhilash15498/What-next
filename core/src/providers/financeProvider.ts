@@ -47,6 +47,8 @@ const STATIC_FINANCE_ITEMS: Candidate[] = [
   },
 ];
 
+const PURE_MOVIE_TAGS = new Set(['bollywood', 'anime', 'movies', 'film', 'cinema']);
+
 export const financeProvider: Provider = {
   category: 'finance',
   name: 'Stock Market & Finance Provider',
@@ -56,6 +58,7 @@ export const financeProvider: Provider = {
 
     for (const interest of active) {
       const tag = interest.name;
+      if (PURE_MOVIE_TAGS.has(tag)) continue;
       const displayTag = tag.replace(/_/g, ' ');
 
       dynamicItems.push({

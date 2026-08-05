@@ -32,7 +32,7 @@ export const TAG_KEYWORDS: Record<string, string[]> = {
 };
 
 const CATEGORY_HINTS: Record<Category, string[]> = {
-  movie: ['movie', 'film', 'cinema', 'imdb', 'trailer'],
+  movie: ['movie', 'film', 'cinema', 'imdb', 'trailer', 'indian', 'bollywood', 'japanese', 'anime', 'hollywood'],
   book: ['book', 'novel', 'goodreads', 'reading list'],
   github: ['github', 'repository', 'pull request', 'open source'],
   learning: ['course', 'tutorial', 'learn', 'udemy', 'coursera'],
