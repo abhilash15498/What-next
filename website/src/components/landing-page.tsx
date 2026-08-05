@@ -15,6 +15,9 @@ import {
   Cpu,
   Bot,
   Terminal,
+  ShieldCheck,
+  Lock,
+  ExternalLink,
 } from "lucide-react";
 import HeroAsciiOne from "@/components/ui/hero-ascii-one";
 
@@ -30,9 +33,9 @@ const features = [
     body: "Movies, books, GitHub repos, courses, side projects, fitness, career moves, tools, and news — ranked against one shared interest model.",
   },
   {
-    icon: Shield,
-    title: "Privacy-first by default",
-    body: "Interest profile, history, and feedback live in IndexedDB. No login, no cloud account, no backend that WhatNext controls.",
+    icon: ShieldCheck,
+    title: "Privacy-first & Blocklist",
+    body: "Automatic sensitive page detection & default blocklist for banking, auth, and payment sites. 100% stored in local IndexedDB.",
   },
   {
     icon: Eye,
@@ -49,6 +52,22 @@ const features = [
     title: "Bring Your Own Key (BYOK)",
     body: "Use your own keys for Groq, TMDB, Google Books, GitHub, and NewsAPI. Your keys stay in local IndexedDB — never on our servers.",
   },
+];
+
+const blocklistTags = [
+  "bank",
+  "banking",
+  "paypal",
+  "stripe.com/pay",
+  ".gov",
+  "irs.gov",
+  "login.",
+  "signin.",
+  "accounts.google.com",
+  "mail.google.com",
+  "outlook.",
+  "auth0.com",
+  "okta.com",
 ];
 
 const installSteps = [
@@ -128,6 +147,55 @@ export default function LandingPage() {
                   </p>
                 </article>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Privacy & Domain Blocklist Section */}
+        <section className="relative px-6 pb-20 lg:px-10">
+          <div className="mx-auto max-w-5xl">
+            <div className="rounded-3xl border border-[#ece8e1]/15 bg-[#050505]/80 p-8 backdrop-blur-md lg:p-12">
+              <div className="mb-8 max-w-xl">
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 font-mono text-[11px] text-emerald-400">
+                  <ShieldCheck className="h-3.5 w-3.5" /> Privacy First & Blocklist Protected
+                </div>
+                <h3 className="font-display text-2xl font-bold tracking-tight text-[#ece8e1] sm:text-3xl lg:text-4xl">
+                  Your sensitive data never enters the model.
+                </h3>
+                <p className="mt-4 font-mono text-xs leading-relaxed text-[#ece8e1]/60 sm:text-sm">
+                  WhatNext automatically ignores banking, auth, payment, and health pages. Password fields and login URLs are skipped instantly before any signal is captured.
+                </p>
+              </div>
+
+              {/* Default Blocked Domain Tags Visual Box */}
+              <div className="rounded-2xl border border-[#ece8e1]/10 bg-[#0d1117] p-6">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2 font-mono text-xs font-semibold text-[#ece8e1]">
+                    <Lock className="h-4 w-4 text-emerald-400" /> Default Domain Blocklist & Keyword Protection
+                  </div>
+                  <a
+                    href="/privacy.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 font-mono text-[11px] text-[#e8a84a] hover:underline"
+                  >
+                    Privacy Policy <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+                <p className="mb-4 font-mono text-[11px] text-[#ece8e1]/45">
+                  Pages on these domains (or matching these substrings) are strictly blocked by default in the background worker:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {blocklistTags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-lg border border-[#ece8e1]/15 bg-[#161b22] px-3 py-1.5 font-mono text-xs text-[#ece8e1]/70"
+                    >
+                      {tag} <span className="text-red-400/80 font-bold">×</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -311,9 +379,15 @@ export default function LandingPage() {
             <span className="font-display text-lg font-bold tracking-widest text-[#ece8e1] italic -skew-x-6">
               WhatNext?
             </span>
-            <p className="font-mono text-[10px] text-[#ece8e1]/35">
-              Stop scrolling. Start doing. · Privacy-first · Open Source
-            </p>
+            <div className="flex items-center gap-4 font-mono text-[10px] text-[#ece8e1]/40">
+              <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="hover:text-[#ece8e1]">
+                Privacy Policy
+              </a>
+              <span>·</span>
+              <span>Stop scrolling. Start doing.</span>
+              <span>·</span>
+              <span>Open Source</span>
+            </div>
           </div>
         </footer>
       </div>

@@ -6,6 +6,19 @@
 
 ---
 
+## 🛡️ Privacy Guarantees & Domain Blocklist
+
+WhatNext? is built on a zero-tracking, privacy-first architecture. **No data ever leaves your browser.**
+
+- **100% Local Storage**: Interest profile, recommendation history, and user feedback live entirely in IndexedDB inside your browser.
+- **Automatic Sensitive Page Protection**: Pages containing password input fields or login/payment URL paths (`/login`, `/signin`, `/checkout`, `/payment`, `/account/security`) are automatically ignored — zero signals are read.
+- **Default Domain Blocklist**: Includes pre-configured patterns for banking, government, auth, and webmail providers:
+  `bank`, `banking`, `paypal`, `stripe.com/pay`, `.gov`, `irs.gov`, `login.`, `signin.`, `accounts.google.com`, `mail.google.com`, `outlook.`, `auth0.com`, `okta.com`
+- **Custom Blocklist**: Easily add workplace portals, personal domains, or sensitive URLs in Settings.
+- **Privacy Policy**: Read our complete [Privacy Policy](website/privacy.html).
+
+---
+
 ## 🔌 Model Context Protocol (MCP) Server Built-in
 
 WhatNext? ships with a native **Model Context Protocol (MCP)** server (`mcp-server/`) built on `@modelcontextprotocol/sdk`. 
@@ -39,10 +52,7 @@ When local MCP sync is enabled, any MCP-compatible AI client — such as **Claud
   - **NewsAPI**: Personalised headlines and tech digests.
 - **🤖 Groq LLM Reasoning**: Integrates Groq (`llama-3.3-70b-versatile`) via BYOK to generate personalised, natural-language *"Why Now?"* and *"AI Reasoning"* explanations for top recommendations.
 - **🔌 Native MCP Integration**: Connect your interest profile directly to Claude Desktop, Cursor, or AI clients via Model Context Protocol.
-- **🔒 100% Privacy-First & Local**:
-  - Interest profile, recommendation history, and feedback live entirely in browser **IndexedDB**.
-  - No login, no cloud server, zero tracking.
-  - Banking, payment, and login pages are automatically excluded from browsing signal collection.
+- **🛡️ Built-in Privacy & Domain Blocklist**: Pre-loaded blocklist protecting financial, login, government, and payment pages.
 
 ---
 
@@ -91,6 +101,7 @@ npm run dev:web
 
 ---
 
-## 📜 License
+## 📜 License & Privacy
 
-Open source under the [MIT License](LICENSE).
+- [Privacy Policy](website/privacy.html)
+- Open source under the [MIT License](LICENSE).
