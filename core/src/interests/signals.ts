@@ -41,6 +41,8 @@ const CATEGORY_HINTS: Record<Category, string[]> = {
   career: ['resume', 'job', 'internship', 'career', 'linkedin'],
   tool: ['tool', 'app', 'software', 'utility'],
   news: ['news', 'breaking', 'headline'],
+  travel: ['travel', 'itinerary', 'flight', 'destination', 'vacation', 'hotel', 'trip'],
+  finance: ['stock market', 'investing', 'portfolio', 'stocks', 'equity', 'shares', 'finance'],
 };
 
 export function isSensitiveDomain(url: string, blocklist: string[]): boolean {

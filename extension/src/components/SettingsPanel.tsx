@@ -12,6 +12,8 @@ const ALL_CATEGORIES: Category[] = [
   'career',
   'tool',
   'news',
+  'travel',
+  'finance',
 ];
 
 const LABELS: Record<Category, string> = {
@@ -24,6 +26,8 @@ const LABELS: Record<Category, string> = {
   career: 'Career',
   tool: 'Tools',
   news: 'News',
+  travel: 'Trip ideas & travel',
+  finance: 'Stock market & finance',
 };
 
 interface Props {

@@ -8,6 +8,8 @@ import { fitnessProvider } from './fitnessProvider.js';
 import { careerProvider } from './careerProvider.js';
 import { toolProvider } from './toolProvider.js';
 import { newsProvider } from './newsProvider.js';
+import { travelProvider } from './travelProvider.js';
+import { financeProvider } from './financeProvider.js';
 
 export const ALL_PROVIDERS: Provider[] = [
   movieProvider,
@@ -19,6 +21,8 @@ export const ALL_PROVIDERS: Provider[] = [
   careerProvider,
   toolProvider,
   newsProvider,
+  travelProvider,
+  financeProvider,
 ];
 
 export * from './types.js';

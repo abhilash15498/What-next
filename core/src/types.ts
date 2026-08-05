@@ -15,7 +15,9 @@ export type Category =
   | 'fitness'
   | 'career'
   | 'tool'
-  | 'news';
+  | 'news'
+  | 'travel'
+  | 'finance';
 
 export type TimeWindow = 'now' | 'tonight' | 'tomorrow' | 'weekend';
 

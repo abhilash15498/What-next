@@ -29,8 +29,8 @@ const features = [
   },
   {
     icon: Layers,
-    title: "Category-independent",
-    body: "Movies, books, GitHub repos, courses, side projects, fitness, career moves, tools, and news — ranked against one shared interest model.",
+    title: "11 Unified Categories",
+    body: "Movies, books, GitHub repos, courses, projects, fitness, career, tools, news, trip ideas, and stock market investments — ranked against one shared interest model.",
   },
   {
     icon: ShieldCheck,
