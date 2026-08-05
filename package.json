@@ -1,0 +1,29 @@
+{
+  "name": "whatnext",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WhatNext? — an AI-powered, privacy-first, category-independent recommendation engine for Chrome. Stop Scrolling. Start Doing.",
+  "workspaces": [
+    "core",
+    "extension",
+    "mcp-server",
+    "website"
+  ],
+  "scripts": {
+    "build:core": "npm run build -w core",
+    "dev": "npm run build:core && npm run dev -w extension",
+    "dev:web": "npm run dev -w website",
+    "build": "npm run build:core && npm run build -w extension && npm run build -w mcp-server",
+    "build:web": "npm run build -w website",
+    "mcp": "npm run start -w mcp-server",
+    "lint": "npm run lint -w extension",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
