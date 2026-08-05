@@ -21,7 +21,7 @@ const STARTER_INTERESTS = [
 ];
 
 export function Onboarding({ onDone }: { onDone: () => void }) {
-  const [selected, setSelected] = useState<Set<string>>(new Set(['ai', 'programming', 'career']));
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
 
   const toggle = (tag: string) => {

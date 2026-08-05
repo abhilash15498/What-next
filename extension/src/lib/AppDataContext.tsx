@@ -80,9 +80,21 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     setLoading(true);
     await loadAll();
-    // Always regenerate on dashboard open — but honour a 30-min cooldown so
-    // rapid tab switches don't hammer the providers or the Groq API.
+    const currentPrefs = await indexedDbStorage.getPreferences();
+
+    // If onboarding is not completed, don't generate recommendations yet
+    if (!currentPrefs.onboardingCompleted) {
+      setEngineResult(null);
+      setLoading(false);
+      return;
+    }
+
     const existing = await indexedDbStorage.getRecommendationHistory(10);
+    if (existing.length === 0) {
+      await regenerate();
+      return;
+    }
+
     const lastGen = existing[0]?.generatedAt ?? 0;
     const staleCutoff = 1000 * 60 * 30; // 30 minutes
     if (Date.now() - lastGen > staleCutoff) {
@@ -134,10 +146,15 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   );
 
   const clearAllData = useCallback(async () => {
+    setLoading(true);
     await indexedDbStorage.clearAll();
     await indexedDbStorage.savePreferences(DEFAULT_PREFERENCES);
+    if (typeof chrome !== 'undefined' && chrome.storage?.session) {
+      await chrome.storage.session.remove('latestEngineResult').catch(() => {});
+    }
     setEngineResult(null);
     await loadAll();
+    setLoading(false);
   }, [loadAll]);
 
   const value = useMemo<AppData>(
