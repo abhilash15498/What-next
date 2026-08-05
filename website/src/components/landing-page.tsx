@@ -353,14 +353,15 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={handleDownloadZip}
+                <a
+                  href="/whatnext-extension.zip"
+                  download="whatnext-extension.zip"
+                  onClick={scrollToInstall}
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-[#e8a84a] px-6 py-3 font-mono text-xs font-semibold text-[#050505] transition-opacity hover:opacity-90"
                 >
                   <Download className="h-4 w-4" strokeWidth={2} />
                   Download Extension (.zip)
-                </button>
+                </a>
                 <a
                   href="https://github.com/abhilash15498/What-next"
                   target="_blank"
