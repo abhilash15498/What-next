@@ -5,7 +5,6 @@ dist/
 .env
 .env.local
 .next/
-website/public/whatnext-extension.zip
 
 # local MCP server data
 .whatnext-mcp/

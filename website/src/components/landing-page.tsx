@@ -7,16 +7,16 @@ import {
   Layers,
   Eye,
   FolderOpen,
-  Terminal,
   Puzzle,
+  FileArchive,
 } from "lucide-react";
 import HeroAsciiOne from "@/components/ui/hero-ascii-one";
 
 const features = [
   {
     icon: Sparkles,
-    title: "One answer, every new tab",
-    body: "A single ranked recommendation — not a feed of noise — with confidence, Why Now?, and DNA metadata you can actually read.",
+    title: "One answer, every time you ask",
+    body: "A single ranked recommendation — not a feed of noise — with confidence score, Why Now? reason, and category metadata you can read.",
   },
   {
     icon: Layers,
@@ -31,25 +31,25 @@ const features = [
   {
     icon: Eye,
     title: "Explainable ranking",
-    body: "Every pick carries a reasoning trail. Rejected candidates get a Why Not? — so you know what the model actually did.",
+    body: "Every pick carries a reasoning trail powered by optional Groq LLM. Rejected candidates get a Why Not? so you know what the model did.",
   },
 ];
 
 const installSteps = [
   {
-    icon: Terminal,
-    title: "Build the extension",
-    body: "From the repo root run npm install && npm run build. The packed extension lands in extension/dist.",
+    icon: FileArchive,
+    title: "Download & Extract ZIP",
+    body: "Click 'Download Extension (.zip)' below and extract the downloaded zip file into a folder on your computer.",
   },
   {
     icon: Puzzle,
-    title: "Open Chrome extensions",
-    body: "Go to chrome://extensions and enable Developer mode in the top-right corner.",
+    title: "Open Chrome Extensions",
+    body: "Open Chrome, navigate to chrome://extensions in the URL bar, and turn ON 'Developer mode' in the top-right corner.",
   },
   {
     icon: FolderOpen,
-    title: "Load unpacked",
-    body: "Click Load unpacked, select the extension/dist folder, then open a new tab to start onboarding.",
+    title: "Click Load Unpacked",
+    body: "Click the 'Load unpacked' button in Chrome and select your extracted extension folder. You're ready to go!",
   },
 ];
 
@@ -62,23 +62,14 @@ export default function LandingPage() {
     document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleDownloadZip = async () => {
-    try {
-      const res = await fetch("/whatnext-extension.zip", { method: "HEAD" });
-      if (!res.ok) {
-        scrollToInstall();
-        window.alert(
-          "Extension zip is not packaged yet.\n\nFrom the monorepo root:\n  npm run build\n  npm run pack:extension -w website\n\nThen try Download ZIP again — or follow the Load unpacked steps above.",
-        );
-        return;
-      }
-      const link = document.createElement("a");
-      link.href = "/whatnext-extension.zip";
-      link.download = "whatnext-extension.zip";
-      link.click();
-    } catch {
-      scrollToInstall();
-    }
+  const handleDownloadZip = () => {
+    const link = document.createElement("a");
+    link.href = "/whatnext-extension.zip";
+    link.download = "whatnext-extension.zip";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    scrollToInstall();
   };
 
   return (
@@ -86,7 +77,7 @@ export default function LandingPage() {
       {/* Fixed starfield behind the entire site */}
       <div aria-hidden className="site-stars pointer-events-none fixed inset-0 -z-10" />
 
-      <HeroAsciiOne onDownload={scrollToInstall} onLearnMore={scrollToFeatures} />
+      <HeroAsciiOne onDownload={handleDownloadZip} onLearnMore={scrollToFeatures} />
 
       <div className="relative">
         <section id="features" className="relative px-6 pt-10 pb-28 lg:px-10 lg:pt-6">
@@ -129,11 +120,10 @@ export default function LandingPage() {
                 Get started
               </p>
               <h2 className="font-display text-3xl leading-tight font-bold tracking-tight text-[#ece8e1] sm:text-4xl lg:text-5xl">
-                Add it to Chrome
+                Install in 3 simple steps
               </h2>
               <p className="mt-5 font-mono text-sm leading-relaxed text-[#ece8e1]/55 lg:text-base">
-                Not on the Chrome Web Store yet — load it as an unpacked
-                extension in under a minute.
+                No developer tools or build steps required. Download the extension ZIP and load it into Chrome in under 60 seconds.
               </p>
             </div>
 
@@ -166,31 +156,28 @@ export default function LandingPage() {
             <div className="flex flex-col gap-6 rounded-2xl border border-[#ece8e1]/10 bg-[#050505]/60 px-6 py-7 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between lg:px-8">
               <div>
                 <p className="font-display text-xl font-semibold text-[#ece8e1]">
-                  Prefer a zip?
+                  Ready to install?
                 </p>
                 <p className="mt-2 max-w-md font-mono text-xs leading-relaxed text-[#ece8e1]/45">
-                  After{" "}
-                  <span className="text-[#e8a84a]">npm run build</span>, run{" "}
-                  <span className="text-[#e8a84a]">npm run pack:extension</span>{" "}
-                  from the website folder, then download below.
+                  Download the pre-packaged extension zip file and follow the 3 quick steps above.
                 </p>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <button
                   type="button"
                   onClick={handleDownloadZip}
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#ece8e1] px-6 py-3 font-mono text-xs font-medium text-[#050505] transition-opacity hover:opacity-90"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#e8a84a] px-6 py-3 font-mono text-xs font-semibold text-[#050505] transition-opacity hover:opacity-90"
                 >
-                  <Download className="h-4 w-4" strokeWidth={1.5} />
-                  Download zip
+                  <Download className="h-4 w-4" strokeWidth={2} />
+                  Download Extension (.zip)
                 </button>
                 <a
-                  href="https://github.com/abhilash15498"
+                  href="https://github.com/abhilash15498/What-next"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 rounded-full border border-[#ece8e1]/20 px-6 py-3 font-mono text-xs text-[#ece8e1]/80 transition-colors hover:border-[#ece8e1]/45 hover:text-[#ece8e1]"
                 >
-                  View source
+                  View Source on GitHub
                 </a>
               </div>
             </div>
@@ -203,7 +190,7 @@ export default function LandingPage() {
               WhatNext?
             </span>
             <p className="font-mono text-[10px] text-[#ece8e1]/35">
-              Stop scrolling. Start doing. · Privacy-first
+              Stop scrolling. Start doing. · Privacy-first · Open Source
             </p>
           </div>
         </footer>
