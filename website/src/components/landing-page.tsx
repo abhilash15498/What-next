@@ -25,12 +25,12 @@ const features = [
   {
     icon: Sparkles,
     title: "One answer, every time you ask",
-    body: "A single ranked recommendation — not a feed of noise — with confidence score, Why Now? reason, and category metadata you can read.",
+    body: "A single ranked recommendation — not a feed of noise — with Why Now? reasoning and time-window scheduling.",
   },
   {
     icon: Layers,
-    title: "11 Unified Categories",
-    body: "Movies, books, GitHub repos, courses, projects, fitness, career, tools, news, trip ideas, and stock market investments — ranked against one shared interest model.",
+    title: "12 Unified Live Categories",
+    body: "Movies, books, GitHub repos, courses, projects, fitness, career, tools, news, travel, stock market, and shopping deals — ranked dynamically against one local interest graph.",
   },
   {
     icon: ShieldCheck,
@@ -40,7 +40,7 @@ const features = [
   {
     icon: Eye,
     title: "Explainable ranking",
-    body: "Every pick carries a reasoning trail powered by optional Groq LLM. Rejected candidates get a Why Not? so you know what the model did.",
+    body: "Every pick carries a natural human reasoning trail powered by Groq Llama-3 LLM. Rejected candidates get a Why Not? explanation.",
   },
   {
     icon: Cpu,
@@ -50,7 +50,70 @@ const features = [
   {
     icon: Bot,
     title: "Bring Your Own Key (BYOK)",
-    body: "Use your own keys for Groq, TMDB, Google Books, GitHub, and NewsAPI. Your keys stay in local IndexedDB — never on our servers.",
+    body: "Use your own keys for Groq & TMDB. Zero setup required — public live API engines run 100% out of the box.",
+  },
+];
+
+const apiShowcase = [
+  {
+    icon: "🎬",
+    title: "TMDB Movies & TV",
+    body: "Live searches TMDB's 1,000,000+ movie database using your exact interest tags with runtimes, ratings, and HD backdrop art.",
+  },
+  {
+    icon: "🧠",
+    title: "Groq AI (Llama-3 LLM)",
+    body: "Connects to Groq's ultra-fast Llama-3 model to write deep, warm, human-like personalized 'Why Now?' explanations.",
+  },
+  {
+    icon: "💻",
+    title: "GitHub REST API",
+    body: "Queries active open-source software repositories, developer tools, and AI libraries matching your exact tech interests.",
+  },
+  {
+    icon: "📰",
+    title: "HackerNews & Tech News",
+    body: "Pulls breaking tech articles and real-time trending discussions 24/7 without tracking you.",
+  },
+  {
+    icon: "🍳",
+    title: "TheMealDB Live Recipes",
+    body: "Fetches step-by-step cooking recipes, ingredients, and YouTube video tutorials matching your food preferences.",
+  },
+  {
+    icon: "📈",
+    title: "Live Financial Market RSS",
+    body: "Surfaces real-time tech earnings guidance, S&P 500 market trends, and macro economics news.",
+  },
+  {
+    icon: "🛍️",
+    title: "Tech Deals & Gear Search",
+    body: "Queries real-time product reviews, ergonomic gear, and hardware deal alerts for your active tools.",
+  },
+  {
+    icon: "🎓",
+    title: "Course & Tutorial Search",
+    body: "Discovers live courses, technical primers, and learning roadmaps across computer science and AI.",
+  },
+  {
+    icon: "🧳",
+    title: "Trip Guides & Travel",
+    body: "Surfaces live travel itineraries, coastal retreats, and destination guides matching outdoor tags.",
+  },
+  {
+    icon: "💪",
+    title: "Fitness & Health Workouts",
+    body: "Fetches structured workout routines, mobility sessions, and sports skill drills matching active fitness tags.",
+  },
+  {
+    icon: "🚀",
+    title: "Career Insights & Growth",
+    body: "Pulls live tech career strategies, interview preparation guides, and software engineering growth articles.",
+  },
+  {
+    icon: "🔒",
+    title: "100% Local BYOK Storage",
+    body: "All API keys and browsing history stay stored strictly in your local browser IndexedDB — never transmitted to servers.",
   },
 ];
 
@@ -99,7 +162,6 @@ export default function LandingPage() {
     document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
   };
 
-
   return (
     <div className="relative min-h-screen text-[#ece8e1]">
       {/* Fixed starfield behind the entire site */}
@@ -120,17 +182,21 @@ export default function LandingPage() {
               </h2>
               <p className="mt-5 font-mono text-sm leading-relaxed text-[#ece8e1]/55 lg:text-base">
                 WhatNext replaces decision fatigue with one explained action —
-                computed locally from everything it already knows about you.
+                computed locally from live public API engines and your interest graph.
               </p>
             </div>
 
-            <div className="grid gap-x-12 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Glowing Hover Boundary Cards */}
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {features.map(({ icon: Icon, title, body }) => (
-                <article key={title}>
-                  <div className="mb-4 text-[#e8a84a]">
-                    <Icon className="h-5 w-5" strokeWidth={1.25} />
+                <article
+                  key={title}
+                  className="group relative rounded-2xl border border-[#ece8e1]/10 bg-[#080a10]/80 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#e8a84a] hover:shadow-[0_0_25px_rgba(232,168,74,0.35)] hover:bg-[#0c121e]"
+                >
+                  <div className="mb-4 text-[#e8a84a] transition-colors group-hover:text-[#e8a84a]">
+                    <Icon className="h-6 w-6" strokeWidth={1.5} />
                   </div>
-                  <h3 className="font-display text-lg font-semibold text-[#ece8e1] sm:text-xl">
+                  <h3 className="font-display text-lg font-semibold text-[#ece8e1] group-hover:text-[#e8a84a] transition-colors">
                     {title}
                   </h3>
                   <p className="mt-3 font-mono text-xs leading-relaxed text-[#ece8e1]/50 lg:text-sm">
@@ -232,7 +298,7 @@ export default function LandingPage() {
                 Designed for absolute clarity.
               </h2>
               <p className="mt-4 font-mono text-sm leading-relaxed text-[#ece8e1]/55 lg:text-base">
-                A clean, dark interface built to guide your focus, display confidence scores, and deliver AI-powered reasoning.
+                A clean, dark interface built to guide your focus, display time schedules, and deliver AI-powered reasoning.
               </p>
             </div>
 
@@ -301,61 +367,31 @@ export default function LandingPage() {
                 Real-time Intelligence
               </p>
               <h2 className="font-display text-3xl leading-tight font-bold tracking-tight text-[#ece8e1] sm:text-4xl">
-                Keyless Defaults + BYOK Live API Integrations
+                12 Dynamic Live API Search Engines
               </h2>
               <p className="mt-4 font-mono text-sm leading-relaxed text-[#ece8e1]/55">
-                WhatNext? works 100% keyless out of the box using public feeds. Optionally bring your own API keys in Settings to connect live global databases directly from your browser.
+                WhatNext? queries live public databases in real-time for zero lag out of the box. Optionally bring your own keys in Settings to unlock deep LLM reasoning and HD media!
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="rounded-2xl border border-[#ece8e1]/10 bg-[#080a10] p-5">
-                <span className="inline-flex rounded-lg bg-[#e8a84a]/10 p-2 text-[#e8a84a] mb-3 text-lg">🎬</span>
-                <h3 className="font-display text-base font-semibold text-[#ece8e1]">TMDB Movies & TV</h3>
-                <p className="mt-2 font-mono text-xs leading-relaxed text-[#ece8e1]/50">
-                  Live searches TMDB’s 1,000,000+ movie database using your exact interest tags with real runtimes and ratings.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-[#ece8e1]/10 bg-[#080a10] p-5">
-                <span className="inline-flex rounded-lg bg-[#e8a84a]/10 p-2 text-[#e8a84a] mb-3 text-lg">🧠</span>
-                <h3 className="font-display text-base font-semibold text-[#ece8e1]">Groq AI (Llama-3 LLM)</h3>
-                <p className="mt-2 font-mono text-xs leading-relaxed text-[#ece8e1]/50">
-                  Connects to Groq’s ultra-fast Llama-3 model to write deep, human-like personalized "Why Now?" explanations.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-[#ece8e1]/10 bg-[#080a10] p-5">
-                <span className="inline-flex rounded-lg bg-[#e8a84a]/10 p-2 text-[#e8a84a] mb-3 text-lg">📚</span>
-                <h3 className="font-display text-base font-semibold text-[#ece8e1]">Google Books API</h3>
-                <p className="mt-2 font-mono text-xs leading-relaxed text-[#ece8e1]/50">
-                  Unlocks live volume queries across millions of published books, literature, and author catalogs.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-[#ece8e1]/10 bg-[#080a10] p-5">
-                <span className="inline-flex rounded-lg bg-[#e8a84a]/10 p-2 text-[#e8a84a] mb-3 text-lg">💻</span>
-                <h3 className="font-display text-base font-semibold text-[#ece8e1]">GitHub REST API</h3>
-                <p className="mt-2 font-mono text-xs leading-relaxed text-[#ece8e1]/50">
-                  Queries active open-source software repositories, developer tools, and AI libraries matching your tech interests.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-[#ece8e1]/10 bg-[#080a10] p-5">
-                <span className="inline-flex rounded-lg bg-[#e8a84a]/10 p-2 text-[#e8a84a] mb-3 text-lg">📰</span>
-                <h3 className="font-display text-base font-semibold text-[#ece8e1]">NewsAPI & HackerNews</h3>
-                <p className="mt-2 font-mono text-xs leading-relaxed text-[#ece8e1]/50">
-                  Pulls breaking articles from 80,000+ global news outlets and real-time trending HackerNews discussions 24/7.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-[#ece8e1]/10 bg-[#080a10] p-5">
-                <span className="inline-flex rounded-lg bg-[#e8a84a]/10 p-2 text-[#e8a84a] mb-3 text-lg">🔒</span>
-                <h3 className="font-display text-base font-semibold text-[#ece8e1]">100% Local BYOK Storage</h3>
-                <p className="mt-2 font-mono text-xs leading-relaxed text-[#ece8e1]/50">
-                  All API keys stay stored strictly in your local browser IndexedDB — never transmitted to central servers.
-                </p>
-              </div>
+            {/* Glowing Amber Gold Hover Boundary Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {apiShowcase.map((item) => (
+                <div
+                  key={item.title}
+                  className="group relative rounded-2xl border border-[#ece8e1]/10 bg-[#080a10]/80 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#e8a84a] hover:shadow-[0_0_25px_rgba(232,168,74,0.35)] hover:bg-[#0c121e]"
+                >
+                  <span className="inline-flex rounded-lg bg-[#e8a84a]/10 p-2 text-xl mb-3 transition-transform group-hover:scale-110">
+                    {item.icon}
+                  </span>
+                  <h3 className="font-display text-base font-semibold text-[#ece8e1] group-hover:text-[#e8a84a] transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2 font-mono text-xs leading-relaxed text-[#ece8e1]/50 group-hover:text-[#ece8e1]/70 transition-colors">
+                    {item.body}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
