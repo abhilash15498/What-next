@@ -1,5 +1,6 @@
-import type { Candidate, Category, InterestProfile, Preferences } from '../types.js';
+import type { Candidate, InterestProfile, Preferences } from '../types.js';
 import type { Provider } from './types.js';
+import { cleanTitle } from '../utils/text.js';
 
 // ── Authentic Stock Market & Financial Analysis Fallback Catalog ──────────────
 
@@ -57,7 +58,8 @@ async function fetchLiveFinanceRSS(query: string): Promise<Candidate[]> {
       const pubDateMatch = raw.match(/<pubDate>(.*?)<\/pubDate>/);
 
       if (titleMatch && linkMatch) {
-        const title = titleMatch[1].replace(/<!\[CDATA\[|\]\]>/g, '').replace(/ - .*$/, '').trim();
+        const rawTitle = titleMatch[1].replace(/<!\[CDATA\[|\]\]>/g, '').replace(/ - .*$/, '').trim();
+        const title = cleanTitle(rawTitle);
         const link = linkMatch[1].trim();
 
         items.push({

@@ -1,5 +1,6 @@
 import type { Candidate, InterestProfile, Preferences } from '../types.js';
 import type { Provider } from './types.js';
+import { cleanTitle } from '../utils/text.js';
 
 // ── Authentic Curated Shopping & Deals Fallback Catalog ──────────────────────
 
@@ -55,7 +56,8 @@ async function fetchLiveShoppingRSS(tag: string): Promise<Candidate[]> {
       const linkMatch = raw.match(/<link>(.*?)<\/link>/);
 
       if (titleMatch && linkMatch) {
-        const title = titleMatch[1].replace(/<!\[CDATA\[|\]\]>/g, '').replace(/ - .*$/, '').trim();
+        const rawTitle = titleMatch[1].replace(/<!\[CDATA\[|\]\]>/g, '').replace(/ - .*$/, '').trim();
+        const title = cleanTitle(rawTitle);
         const link = linkMatch[1].trim();
 
         items.push({

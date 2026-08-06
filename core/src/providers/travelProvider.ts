@@ -1,5 +1,6 @@
 import type { Candidate, InterestProfile, Preferences } from '../types.js';
 import type { Provider } from './types.js';
+import { cleanTitle } from '../utils/text.js';
 
 const REAL_TRAVEL_ITEMS: Candidate[] = [
   {
@@ -15,20 +16,6 @@ const REAL_TRAVEL_ITEMS: Candidate[] = [
     popularity: 0.9,
     addedAt: Date.parse('2025-01-01'),
     suitedWindows: ['weekend', 'now'],
-  },
-  {
-    id: 'travel_goa_beach_food',
-    title: 'Plan a Goa weekend beach escape & culinary food tour',
-    description:
-      'Discover quiet hidden beaches, fresh coastal seafood shacks, and historic Latin Quarter architecture in Fontainhas.',
-    url: 'https://www.google.com/travel',
-    category: 'travel',
-    tags: ['travel', 'food', 'lifestyle'],
-    difficulty: 'beginner',
-    estimatedMinutes: 35,
-    popularity: 0.88,
-    addedAt: Date.parse('2025-02-01'),
-    suitedWindows: ['weekend'],
   },
 ];
 
@@ -55,7 +42,8 @@ async function fetchLiveTravelRSS(tag: string): Promise<Candidate[]> {
       const linkMatch = raw.match(/<link>(.*?)<\/link>/);
 
       if (titleMatch && linkMatch) {
-        const title = titleMatch[1].replace(/<!\[CDATA\[|\]\]>/g, '').replace(/ - .*$/, '').trim();
+        const rawTitle = titleMatch[1].replace(/<!\[CDATA\[|\]\]>/g, '').replace(/ - .*$/, '').trim();
+        const title = cleanTitle(rawTitle);
         const link = linkMatch[1].trim();
 
         items.push({
