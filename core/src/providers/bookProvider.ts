@@ -1,7 +1,7 @@
 import type { Candidate, InterestProfile, Preferences } from '../types.js';
 import type { Provider } from './types.js';
 
-// ── Static fallback catalog (used when Google Books API returns no items) ───
+// ── Curated modern books catalog ─────────────────────────────────────────────
 
 const STATIC_ITEMS: Candidate[] = [
   {
@@ -90,22 +90,24 @@ interface GoogleBooksItem {
   };
 }
 
-function topInterestQuery(profile: InterestProfile): string {
-  const sorted = Object.values(profile)
+function topInterestQuery(profile: InterestProfile): string | null {
+  const active = Object.values(profile)
     .filter((i) => i.score > 0)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 3)
     .map((i) => i.name.replace(/_/g, ' '));
-  return sorted.length > 0 ? sorted.join(' OR ') : 'reading';
+  return active.length > 0 ? active[0] : null;
 }
 
 async function fetchGoogleBooksCandidates(
   apiKey: string,
   profile: InterestProfile,
 ): Promise<Candidate[]> {
-  const q = encodeURIComponent(topInterestQuery(profile));
-  const url = `https://www.googleapis.com/books/v1/volumes?q=${q}&orderBy=relevance&maxResults=10${apiKey ? `&key=${apiKey}` : ''}`;
-  
+  const topInterest = topInterestQuery(profile);
+  if (!topInterest) return [];
+
+  const q = encodeURIComponent(`subject:${topInterest} OR ${topInterest}`);
+  const url = `https://www.googleapis.com/books/v1/volumes?q=${q}&orderBy=relevance&printType=books&maxResults=12${apiKey ? `&key=${apiKey}` : ''}`;
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 4000);
 
@@ -116,20 +118,21 @@ async function fetchGoogleBooksCandidates(
     const data = (await res.json()) as { items?: GoogleBooksItem[] };
     if (!data.items?.length) return [];
 
-    return data.items.map((item) => {
+    // Filter out antique public-domain scanned books with generic titles
+    const filtered = data.items.filter((item) => {
+      const title = item.volumeInfo.title.toLowerCase();
+      if (title.includes('catalogue of') || title.includes('history readers') || title.includes('odes of') || title.includes('report of')) {
+        return false;
+      }
+      return Boolean(item.volumeInfo.authors?.length);
+    });
+
+    return filtered.slice(0, 8).map((item) => {
       const v = item.volumeInfo;
       const author = v.authors?.[0] ?? 'Author';
       const pages = v.pageCount ?? 250;
       const estimatedMinutes = Math.round((pages / 25) * 10);
-      const popularity = Math.min((v.averageRating ?? 3.5) / 5, 1);
-
-      const tags: string[] = ['books'];
-      const cats = (v.categories ?? []).join(' ').toLowerCase();
-      if (cats.includes('computer') || cats.includes('programming')) tags.push('programming');
-      if (cats.includes('artificial') || cats.includes('machine')) tags.push('ai');
-      if (cats.includes('business') || cats.includes('finance')) tags.push('finance', 'stock_market');
-      if (cats.includes('cooking') || cats.includes('food')) tags.push('cooking', 'food');
-      if (cats.includes('sports') || cats.includes('football')) tags.push('football');
+      const popularity = Math.min((v.averageRating ?? 4.0) / 5, 1);
 
       return {
         id: `gbooks_${item.id}`,
@@ -137,10 +140,10 @@ async function fetchGoogleBooksCandidates(
         description:
           v.description
             ? v.description.slice(0, 200).replace(/<[^>]+>/g, '') + (v.description.length > 200 ? '…' : '')
-            : `A book by ${author}.`,
+            : `A highly-rated book on ${topInterest} by ${author}.`,
         url: v.infoLink ?? `https://www.google.com/search?tbm=bks&q=${encodeURIComponent(v.title)}`,
         category: 'book' as const,
-        tags,
+        tags: [topInterest, 'books'],
         difficulty: pages > 400 ? ('advanced' as const) : pages > 200 ? ('intermediate' as const) : ('beginner' as const),
         estimatedMinutes,
         popularity,

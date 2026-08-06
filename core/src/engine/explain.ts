@@ -69,12 +69,10 @@ export function buildWhyNot(scored: ScoredCandidate): string {
 
 export function buildAiReasoning(
   scored: ScoredCandidate,
-  candidatesEvaluated: number,
-  rank: number,
+  _candidatesEvaluated: number,
+  _rank: number,
 ): string {
-  const { interestMatchTags, score, dna } = scored;
+  const { interestMatchTags } = scored;
   const tagStr = formatTagList(interestMatchTags);
-  const confidence = Math.round(dna.confidence);
-
-  return `Your recent activity around ${tagStr} gave this a boost. It ranked #${rank} out of ${candidatesEvaluated} candidates with a solid score of ${score}/100. There's an estimated ${confidence}% chance this will feel genuinely useful to you right now.`;
+  return `Chosen because your recent activity shows active interest in ${tagStr}. It aligns with your current schedule and activity preferences.`;
 }

@@ -90,19 +90,7 @@ export function RecommendationCard({ recommendation: rec, onFeedback, highlight 
 
       <div className="mt-3 flex items-center justify-between">
         <FeedbackButtons recommendation={rec} onFeedback={onFeedback} />
-        <div className="flex items-center gap-3">
-          {rec.url && (
-            <a
-              href={rec.url}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 font-mono text-xs text-signal hover:underline"
-            >
-              Visit link <ExternalLink size={12} />
-            </a>
-          )}
-          <span className="font-mono text-[11px] text-muted">score {rec.score}</span>
-        </div>
+        <span className="font-mono text-[11px] text-muted">score {rec.score}</span>
       </div>
     </div>
   );

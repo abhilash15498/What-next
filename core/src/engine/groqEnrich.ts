@@ -41,11 +41,13 @@ interface GroqResponse {
 // ── Prompt builder ─────────────────────────────────────────────────────────────
 
 function buildSystemPrompt(): string {
-  return `You are WhatNext, a personal recommendation engine. Your job is to write warm, specific, first-person explanations for why a recommendation fits a user right now.
+  return `You are WhatNext, a smart personal activity assistant.
+Your job is to explain why a recommendation fits the user right now in plain, natural human English.
 
-Rules:
-- Be concise, direct, and friendly — no filler phrases like "Great choice!"
-- Reference the user's actual interests and scores when relevant
+STRICT RULES:
+- Write like a knowledgeable, friendly advisor.
+- NEVER use mechanical algorithm jargon, score numbers (e.g. "score of 56.9/100"), confidence percentages (e.g. "confidence of 42%"), rank numbers (e.g. "ranked #1 out of candidates"), or algorithm references ("the algorithm considered").
+- Explain natural real-world reasons why this specific item matches the user's active interests.
 - Respond ONLY with valid JSON. No markdown, no code fences, no extra text.`;
 }
 
@@ -53,10 +55,10 @@ function buildUserPrompt(rec: Recommendation, profile: InterestProfile): string 
   const topInterests = Object.values(profile)
     .sort((a, b) => b.score - a.score)
     .slice(0, 5)
-    .map((i) => `${i.name.replace(/_/g, ' ')} (score ${Math.round(i.score)}/100, trend: ${i.trend})`)
+    .map((i) => i.name.replace(/_/g, ' '))
     .join(', ');
 
-  return `User's top interests: ${topInterests || 'unknown (new user)'}
+  return `User's active interests: ${topInterests || 'general discovery'}
 
 Recommendation:
 - Title: ${rec.title}
@@ -64,20 +66,17 @@ Recommendation:
 - Tags: ${rec.dna.tags.join(', ')}
 - Difficulty: ${rec.dna.difficulty}
 - Estimated time: ${rec.dna.estimatedMinutes} min
-- Rank: #${rec.rank} out of the evaluated candidates
-- Score: ${rec.score}/100
-- Confidence: ${Math.round(rec.dna.confidence)}%
 
-Current template explanations (use as context, improve upon them):
+Current context:
 - whyNow: "${rec.whyNow}"
 - aiReasoning: "${rec.aiReasoning}"
 - description: "${rec.description}"
 
-Write improved versions. Respond with ONLY this JSON (no other text):
+Write improved versions in natural, warm human language (NO scores, NO percentages, NO rank numbers, NO algorithm jargon). Respond with ONLY this JSON:
 {
-  "whyNow": "2-3 sentences. Why this specific item for this user right now. Mention their actual interests.",
-  "aiReasoning": "2-3 sentences. Explain the ranking logic — what factors tipped this to #${rec.rank}, what the score means.",
-  "description": "1 sharp sentence describing what this item actually is, in plain English."
+  "whyNow": "2 sentences. Why this specific item fits this user's active interest right now.",
+  "aiReasoning": "2 sentences. Warm human context explaining how this activity complements their current interests and daily flow.",
+  "description": "1 clear sentence describing what this item actually is in plain English."
 }`;
 }
 
@@ -126,15 +125,6 @@ async function enrichSingle(
 
 // ── Public API ─────────────────────────────────────────────────────────────────
 
-/**
- * Enriches the top ENRICH_LIMIT recommendations using Groq.
- * Returns a new array with enriched fields merged in; the rest of the feed
- * is returned unchanged. Never throws — any error means the original rec is kept.
- *
- * @param recommendations Full ranked recommendation feed
- * @param profile User's interest profile
- * @param apiKey Groq API key from Preferences
- */
 export async function enrichWithGroq(
   recommendations: Recommendation[],
   profile: InterestProfile,
@@ -143,7 +133,6 @@ export async function enrichWithGroq(
   const toEnrich = recommendations.slice(0, ENRICH_LIMIT);
   const rest = recommendations.slice(ENRICH_LIMIT);
 
-  // Run enrichments in parallel for speed
   const enriched = await Promise.all(
     toEnrich.map(async (rec): Promise<Recommendation> => {
       try {
@@ -156,7 +145,7 @@ export async function enrichWithGroq(
           description: fields.description,
         };
       } catch {
-        return rec; // Silent fallback — keep original template
+        return rec;
       }
     }),
   );
