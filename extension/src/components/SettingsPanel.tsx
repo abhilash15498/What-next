@@ -222,7 +222,7 @@ export function SettingsPanel({
             </p>
           </div>
           <span className="text-xs font-mono text-signal font-medium">
-            {activeTopicCount} active
+            {activeTopicCount} topics active
           </span>
         </div>
 
@@ -274,9 +274,14 @@ export function SettingsPanel({
       {/* ── Categories ──────────────────────────────────────────────────────── */}
       <section className="rounded-xl border border-border bg-surface p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-display text-sm font-semibold">Categories</h3>
+          <div>
+            <h3 className="font-display text-sm font-semibold">Allowed Category Types</h3>
+            <p className="text-xs text-muted mt-0.5">
+              Control which broad activity types are allowed to surface in your feed.
+            </p>
+          </div>
           <span className="text-xs text-muted font-mono">
-            {ALL_CATEGORIES.length - prefs.disabledCategories.length} / {ALL_CATEGORIES.length} active
+            {ALL_CATEGORIES.length - prefs.disabledCategories.length} / {ALL_CATEGORIES.length} enabled
           </span>
         </div>
         <div className="grid grid-cols-2 gap-2">
