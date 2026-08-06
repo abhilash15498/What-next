@@ -1,6 +1,6 @@
 # WhatNext? — Stop Scrolling. Start Doing.
 
-![WhatNext Banner](docs/screenshots/promo.png)
+![WhatNext Dashboard](docs/screenshots/dashboard.png)
 
 > **WhatNext?** is an AI-powered, privacy-first, category-independent Chrome extension that tells you the **single most valuable thing to do next** — movies, books, GitHub repos, courses, coding projects, fitness, career, tools, and news — ranked against one shared local interest model.
 
@@ -44,7 +44,7 @@ When local MCP sync is enabled, any MCP-compatible AI client — such as **Claud
 
 ## ✨ Key Features
 
-- **🎯 Unified 9-Category Engine**: Evaluates Movies, Books, GitHub Repos, Courses, Side Projects, Fitness, Career, News, and Productivity Tools in parallel.
+- **🎯 Unified 12-Category Engine**: Evaluates Movies, Books, GitHub Repos, Courses, Projects, Fitness, Career, Tools, News, Travel, Stock Market, and Shopping Deals in parallel.
 - **⚡ Live Data Providers (BYOK)**: Fetch real-time up-to-date recommendations using optional API keys:
   - **TMDB**: Live popular movies and TV shows matching your interest tags.
   - **Google Books**: Targeted book discovery based on your top reading topics.
