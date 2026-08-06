@@ -1,11 +1,12 @@
 import type { Candidate, InterestProfile, Preferences } from '../types.js';
 import type { Provider } from './types.js';
 
-const items: Candidate[] = [
+const STATIC_CAREER_ITEMS: Candidate[] = [
   {
     id: 'career_update_linkedin_projects',
     title: 'Refresh your LinkedIn project section',
-    description: 'Add your latest shipped project with a 2-line outcome-first summary and a link — recruiters scan this section first.',
+    description: 'Add your latest shipped project with a 2-line outcome-first summary and a link.',
+    url: 'https://www.linkedin.com/',
     category: 'career',
     tags: ['career', 'programming'],
     difficulty: 'beginner',
@@ -14,59 +15,67 @@ const items: Candidate[] = [
     addedAt: Date.parse('2025-06-01'),
     suitedWindows: ['now', 'tonight'],
   },
-  {
-    id: 'career_ml_summer_school_followup',
-    title: 'Follow up on your ML Summer School application',
-    description: 'Check the application portal for status updates and prep a 60-second summary of your SOP in case of an interview.',
-    category: 'career',
-    tags: ['ai', 'career'],
-    difficulty: 'beginner',
-    estimatedMinutes: 30,
-    popularity: 0.6,
-    addedAt: Date.parse('2025-07-15'),
-    suitedWindows: ['now', 'tomorrow'],
-  },
-  {
-    id: 'career_mock_interview',
-    title: 'Do one mock technical interview (45 min)',
-    description: 'Practice a data structures/algorithms problem out loud on a whiteboard or shared doc — talking through it is the actual skill being tested.',
-    category: 'career',
-    tags: ['career', 'programming'],
-    difficulty: 'intermediate',
-    estimatedMinutes: 45,
-    popularity: 0.68,
-    addedAt: Date.parse('2025-05-10'),
-    suitedWindows: ['tomorrow', 'weekend'],
-  },
-  {
-    id: 'career_open_source_contribution',
-    title: 'Make your first open-source pull request',
-    description: 'Find a "good first issue" label on a repo you already use and submit a small, well-scoped fix.',
-    category: 'career',
-    tags: ['github', 'programming', 'career'],
-    difficulty: 'intermediate',
-    estimatedMinutes: 90,
-    popularity: 0.55,
-    addedAt: Date.parse('2025-04-20'),
-    suitedWindows: ['weekend'],
-  },
-  {
-    id: 'career_cold_outreach',
-    title: 'Send 3 thoughtful cold outreach messages',
-    description: 'Reach out to people working in quantum engineering or AI/ML roles you admire, referencing something specific from their work.',
-    category: 'career',
-    tags: ['career', 'entrepreneurship'],
-    difficulty: 'beginner',
-    estimatedMinutes: 30,
-    popularity: 0.5,
-    addedAt: Date.parse('2025-03-01'),
-    suitedWindows: ['now', 'tomorrow'],
-  },
 ];
+
+async function fetchLiveCareerRSS(tag: string): Promise<Candidate[]> {
+  const query = `${tag} software engineer career tech interview guide 2026`;
+  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (!res.ok) return [];
+
+    const text = await res.text();
+    const items: Candidate[] = [];
+    const itemMatches = text.match(/<item>[\s\S]*?<\/item>/g) || [];
+
+    for (let i = 0; i < Math.min(itemMatches.length, 5); i++) {
+      const raw = itemMatches[i];
+      const titleMatch = raw.match(/<title>(.*?)<\/title>/);
+      const linkMatch = raw.match(/<link>(.*?)<\/link>/);
+
+      if (titleMatch && linkMatch) {
+        const title = titleMatch[1].replace(/<!\[CDATA\[|\]\]>/g, '').replace(/ - .*$/, '').trim();
+        const link = linkMatch[1].trim();
+
+        items.push({
+          id: `career_rss_${i}_${Date.now()}`,
+          title: `Career Guide: ${title}`,
+          description: `Live tech career insight, interview strategy, and growth breakdown for ${tag}.`,
+          url: link,
+          category: 'career',
+          tags: [tag, 'career'],
+          difficulty: 'intermediate',
+          estimatedMinutes: 25,
+          popularity: 0.9,
+          addedAt: Date.now(),
+          suitedWindows: ['now', 'tomorrow'],
+        });
+      }
+    }
+    return items;
+  } catch {
+    clearTimeout(timeoutId);
+    return [];
+  }
+}
 
 export const careerProvider: Provider = {
   category: 'career',
-  name: 'Career Provider',
-  getCandidates: (_prefs: Preferences, _profile: InterestProfile): Promise<Candidate[]> =>
-    Promise.resolve(items),
+  name: 'Career Provider (Live RSS)',
+  async getCandidates(_prefs: Preferences, profile: InterestProfile): Promise<Candidate[]> {
+    const activeTag = Object.values(profile).find((i) => i.score > 0)?.name ?? 'programming';
+
+    try {
+      const liveItems = await fetchLiveCareerRSS(activeTag);
+      if (liveItems.length > 0) return liveItems;
+    } catch {
+      // Fallback
+    }
+
+    return STATIC_CAREER_ITEMS;
+  },
 };

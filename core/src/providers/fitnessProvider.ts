@@ -1,11 +1,12 @@
 import type { Candidate, InterestProfile, Preferences } from '../types.js';
 import type { Provider } from './types.js';
 
-const items: Candidate[] = [
+const STATIC_FITNESS_ITEMS: Candidate[] = [
   {
     id: 'fit_45min_strength',
     title: 'Do a 45-minute strength workout',
-    description: 'Full-body compound lifts (squat, hinge, push, pull) — good default when you have no specific split planned.',
+    description: 'Full-body compound lifts (squat, hinge, push, pull) — ideal active recovery & strength training.',
+    url: 'https://www.youtube.com/results?search_query=full+body+workout+routine',
     category: 'fitness',
     tags: ['fitness'],
     difficulty: 'intermediate',
@@ -18,6 +19,7 @@ const items: Candidate[] = [
     id: 'fit_20min_mobility',
     title: 'Do a 20-minute mobility & stretching session',
     description: 'Hip, shoulder, and thoracic spine mobility work — pairs well after long study or coding sessions.',
+    url: 'https://www.youtube.com/results?search_query=20+min+full+body+stretch+mobility',
     category: 'fitness',
     tags: ['fitness', 'productivity'],
     difficulty: 'beginner',
@@ -26,47 +28,67 @@ const items: Candidate[] = [
     addedAt: Date.parse('2025-05-15'),
     suitedWindows: ['now', 'tonight'],
   },
-  {
-    id: 'fit_5k_run',
-    title: 'Run 5K at an easy pace',
-    description: 'Zone 2 aerobic base-building run — low fatigue cost, good on a day with heavy mental workload.',
-    category: 'fitness',
-    tags: ['fitness'],
-    difficulty: 'intermediate',
-    estimatedMinutes: 30,
-    popularity: 0.7,
-    addedAt: Date.parse('2025-04-01'),
-    suitedWindows: ['now', 'tomorrow'],
-  },
-  {
-    id: 'fit_football_juggling',
-    title: 'Practice 15 minutes of football ball-control drills',
-    description: 'Cone dribbling and juggling reps — quick skill practice for a football fan wanting to stay sharp.',
-    category: 'fitness',
-    tags: ['football', 'fitness'],
-    difficulty: 'beginner',
-    estimatedMinutes: 15,
-    popularity: 0.5,
-    addedAt: Date.parse('2025-05-25'),
-    suitedWindows: ['now', 'tonight'],
-  },
-  {
-    id: 'fit_weekend_long_walk',
-    title: 'Take a 60-minute outdoor walk',
-    description: 'Low-intensity movement good for recovery days and for thinking through unresolved project decisions.',
-    category: 'fitness',
-    tags: ['fitness', 'productivity'],
-    difficulty: 'beginner',
-    estimatedMinutes: 60,
-    popularity: 0.55,
-    addedAt: Date.parse('2025-06-15'),
-    suitedWindows: ['weekend', 'tonight'],
-  },
 ];
+
+async function fetchLiveFitnessRSS(tag: string): Promise<Candidate[]> {
+  const query = `${tag} workout routine fitness training guide`;
+  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (!res.ok) return [];
+
+    const text = await res.text();
+    const items: Candidate[] = [];
+    const itemMatches = text.match(/<item>[\s\S]*?<\/item>/g) || [];
+
+    for (let i = 0; i < Math.min(itemMatches.length, 5); i++) {
+      const raw = itemMatches[i];
+      const titleMatch = raw.match(/<title>(.*?)<\/title>/);
+      const linkMatch = raw.match(/<link>(.*?)<\/link>/);
+
+      if (titleMatch && linkMatch) {
+        const title = titleMatch[1].replace(/<!\[CDATA\[|\]\]>/g, '').replace(/ - .*$/, '').trim();
+        const link = linkMatch[1].trim();
+
+        items.push({
+          id: `fit_rss_${i}_${Date.now()}`,
+          title: `Workout Guide: ${title}`,
+          description: `Live workout routine and health performance guide for ${tag}.`,
+          url: link,
+          category: 'fitness',
+          tags: [tag, 'fitness'],
+          difficulty: 'beginner',
+          estimatedMinutes: 30,
+          popularity: 0.9,
+          addedAt: Date.now(),
+          suitedWindows: ['now', 'tomorrow'],
+        });
+      }
+    }
+    return items;
+  } catch {
+    clearTimeout(timeoutId);
+    return [];
+  }
+}
 
 export const fitnessProvider: Provider = {
   category: 'fitness',
-  name: 'Fitness Provider',
-  getCandidates: (_prefs: Preferences, _profile: InterestProfile): Promise<Candidate[]> =>
-    Promise.resolve(items),
+  name: 'Fitness & Health Provider (Live RSS)',
+  async getCandidates(_prefs: Preferences, profile: InterestProfile): Promise<Candidate[]> {
+    const activeTag = Object.values(profile).find((i) => i.score > 0 && (i.name === 'fitness' || i.name === 'football'))?.name ?? 'fitness';
+
+    try {
+      const liveItems = await fetchLiveFitnessRSS(activeTag);
+      if (liveItems.length > 0) return liveItems;
+    } catch {
+      // Fallback
+    }
+
+    return STATIC_FITNESS_ITEMS;
+  },
 };

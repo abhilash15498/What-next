@@ -1,11 +1,12 @@
 import type { Candidate, InterestProfile, Preferences } from '../types.js';
 import type { Provider } from './types.js';
 
-const items: Candidate[] = [
+const STATIC_TOOL_ITEMS: Candidate[] = [
   {
     id: 'tool_obsidian',
     title: 'Set up Obsidian for project notes',
-    description: 'Local-first, markdown-based note tool — a natural fit if you like keeping data privacy-first, same philosophy as this extension.',
+    description: 'Local-first, markdown-based note tool — a natural fit for privacy-first productivity.',
+    url: 'https://obsidian.md/',
     category: 'tool',
     tags: ['productivity'],
     difficulty: 'beginner',
@@ -14,59 +15,67 @@ const items: Candidate[] = [
     addedAt: Date.parse('2025-01-05'),
     suitedWindows: ['now'],
   },
-  {
-    id: 'tool_react_flow',
-    title: 'Try React Flow for a graph-based UI',
-    description: 'Node-based diagram library — worth exploring for any project that needs to visualize relationships (like an interest graph).',
-    category: 'tool',
-    tags: ['web_dev', 'programming'],
-    difficulty: 'intermediate',
-    estimatedMinutes: 40,
-    popularity: 0.5,
-    addedAt: Date.parse('2025-05-20'),
-    suitedWindows: ['now', 'tomorrow'],
-  },
-  {
-    id: 'tool_postman',
-    title: 'Set up a Postman/Bruno collection for your APIs',
-    description: 'Organize and version your API request collections instead of re-typing curl commands.',
-    category: 'tool',
-    tags: ['programming'],
-    difficulty: 'beginner',
-    estimatedMinutes: 20,
-    popularity: 0.55,
-    addedAt: Date.parse('2024-11-20'),
-    suitedWindows: ['now'],
-  },
-  {
-    id: 'tool_notion_tracker',
-    title: 'Build a lightweight Notion project tracker',
-    description: 'A simple kanban across your in-flight projects (SENTINEL, Reality Check, StockTrack, etc.) so nothing silently stalls.',
-    category: 'tool',
-    tags: ['productivity', 'career'],
-    difficulty: 'beginner',
-    estimatedMinutes: 30,
-    popularity: 0.6,
-    addedAt: Date.parse('2025-02-25'),
-    suitedWindows: ['now', 'tomorrow'],
-  },
-  {
-    id: 'tool_qiskit_lab',
-    title: 'Install Qiskit + set up a local Jupyter quantum lab',
-    description: 'One-time environment setup so every future quantum-roadmap session starts with zero friction.',
-    category: 'tool',
-    tags: ['quantum_computing', 'programming'],
-    difficulty: 'intermediate',
-    estimatedMinutes: 35,
-    popularity: 0.45,
-    addedAt: Date.parse('2025-03-15'),
-    suitedWindows: ['now'],
-  },
 ];
+
+async function fetchLiveToolRSS(tag: string): Promise<Candidate[]> {
+  const query = `${tag} developer tool software productivity app review 2026`;
+  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (!res.ok) return [];
+
+    const text = await res.text();
+    const items: Candidate[] = [];
+    const itemMatches = text.match(/<item>[\s\S]*?<\/item>/g) || [];
+
+    for (let i = 0; i < Math.min(itemMatches.length, 5); i++) {
+      const raw = itemMatches[i];
+      const titleMatch = raw.match(/<title>(.*?)<\/title>/);
+      const linkMatch = raw.match(/<link>(.*?)<\/link>/);
+
+      if (titleMatch && linkMatch) {
+        const title = titleMatch[1].replace(/<!\[CDATA\[|\]\]>/g, '').replace(/ - .*$/, '').trim();
+        const link = linkMatch[1].trim();
+
+        items.push({
+          id: `tool_rss_${i}_${Date.now()}`,
+          title: `Discover Tool: ${title}`,
+          description: `Live developer tool, library, and productivity app breakdown for ${tag}.`,
+          url: link,
+          category: 'tool',
+          tags: [tag, 'productivity'],
+          difficulty: 'beginner',
+          estimatedMinutes: 20,
+          popularity: 0.9,
+          addedAt: Date.now(),
+          suitedWindows: ['now', 'tomorrow'],
+        });
+      }
+    }
+    return items;
+  } catch {
+    clearTimeout(timeoutId);
+    return [];
+  }
+}
 
 export const toolProvider: Provider = {
   category: 'tool',
-  name: 'Tool Provider',
-  getCandidates: (_prefs: Preferences, _profile: InterestProfile): Promise<Candidate[]> =>
-    Promise.resolve(items),
+  name: 'Tools & Software Provider (Live RSS)',
+  async getCandidates(_prefs: Preferences, profile: InterestProfile): Promise<Candidate[]> {
+    const activeTag = Object.values(profile).find((i) => i.score > 0)?.name ?? 'productivity';
+
+    try {
+      const liveItems = await fetchLiveToolRSS(activeTag);
+      if (liveItems.length > 0) return liveItems;
+    } catch {
+      // Fallback
+    }
+
+    return STATIC_TOOL_ITEMS;
+  },
 };

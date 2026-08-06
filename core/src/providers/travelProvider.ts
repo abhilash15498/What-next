@@ -1,8 +1,6 @@
 import type { Candidate, InterestProfile, Preferences } from '../types.js';
 import type { Provider } from './types.js';
 
-// ── Authentic Curated Travel & Trip Ideas Catalog ────────────────────────────
-
 const REAL_TRAVEL_ITEMS: Candidate[] = [
   {
     id: 'travel_kerala_backwaters',
@@ -32,59 +30,72 @@ const REAL_TRAVEL_ITEMS: Candidate[] = [
     addedAt: Date.parse('2025-02-01'),
     suitedWindows: ['weekend'],
   },
-  {
-    id: 'travel_manali_ladakh',
-    title: 'Plan a Himalayan mountain road trip: Manali & Leh Ladakh',
-    description:
-      'Scenic high-altitude mountain passes, Pangong lake, Buddhist monasteries, and mountain adventure culture.',
-    url: 'https://www.google.com/travel',
-    category: 'travel',
-    tags: ['travel', 'outdoor'],
-    difficulty: 'intermediate',
-    estimatedMinutes: 45,
-    popularity: 0.86,
-    addedAt: Date.parse('2025-02-10'),
-    suitedWindows: ['weekend'],
-  },
-  {
-    id: 'travel_coorg_plantation',
-    title: 'Explore Coorg & Western Ghats coffee plantation retreat',
-    description:
-      'Misty hills, spice plantations, waterfalls, and nature trekking trails in Karnataka.',
-    url: 'https://www.google.com/travel',
-    category: 'travel',
-    tags: ['travel', 'outdoor', 'lifestyle'],
-    difficulty: 'beginner',
-    estimatedMinutes: 25,
-    popularity: 0.85,
-    addedAt: Date.parse('2025-01-15'),
-    suitedWindows: ['weekend', 'now'],
-  },
-  {
-    id: 'travel_scenic_roadtrip',
-    title: 'Map out a 3-day scenic road trip route & food stops',
-    description:
-      'Discover scenic driving routes, local culinary hidden gems, and picturesque stopovers along the way.',
-    url: 'https://www.google.com/maps',
-    category: 'travel',
-    tags: ['travel', 'food', 'photography'],
-    difficulty: 'beginner',
-    estimatedMinutes: 30,
-    popularity: 0.84,
-    addedAt: Date.parse('2025-02-01'),
-    suitedWindows: ['weekend'],
-  },
 ];
 
 const TRAVEL_TAGS = new Set(['travel', 'outdoor', 'lifestyle']);
 
+async function fetchLiveTravelRSS(tag: string): Promise<Candidate[]> {
+  const query = `${tag} travel guide trip itinerary 2026`;
+  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (!res.ok) return [];
+
+    const text = await res.text();
+    const items: Candidate[] = [];
+    const itemMatches = text.match(/<item>[\s\S]*?<\/item>/g) || [];
+
+    for (let i = 0; i < Math.min(itemMatches.length, 5); i++) {
+      const raw = itemMatches[i];
+      const titleMatch = raw.match(/<title>(.*?)<\/title>/);
+      const linkMatch = raw.match(/<link>(.*?)<\/link>/);
+
+      if (titleMatch && linkMatch) {
+        const title = titleMatch[1].replace(/<!\[CDATA\[|\]\]>/g, '').replace(/ - .*$/, '').trim();
+        const link = linkMatch[1].trim();
+
+        items.push({
+          id: `travel_rss_${i}_${Date.now()}`,
+          title: `Trip Guide: ${title}`,
+          description: `Live travel itinerary and destination spotlight covering ${tag}.`,
+          url: link,
+          category: 'travel',
+          tags: [tag, 'travel'],
+          difficulty: 'beginner',
+          estimatedMinutes: 30,
+          popularity: 0.9,
+          addedAt: Date.now(),
+          suitedWindows: ['weekend', 'now'],
+        });
+      }
+    }
+    return items;
+  } catch {
+    clearTimeout(timeoutId);
+    return [];
+  }
+}
+
 export const travelProvider: Provider = {
   category: 'travel',
-  name: 'Travel & Trip Ideas Provider',
+  name: 'Travel & Trip Ideas Provider (Live RSS)',
   async getCandidates(_prefs: Preferences, profile: InterestProfile): Promise<Candidate[]> {
     const hasTravelInterest = Object.values(profile).some(
       (i) => i.score > 0 && TRAVEL_TAGS.has(i.name),
     );
-    return hasTravelInterest ? REAL_TRAVEL_ITEMS : [];
+    if (!hasTravelInterest) return [];
+
+    try {
+      const liveItems = await fetchLiveTravelRSS('India travel');
+      if (liveItems.length > 0) return liveItems;
+    } catch {
+      // Fallback
+    }
+
+    return REAL_TRAVEL_ITEMS;
   },
 };
