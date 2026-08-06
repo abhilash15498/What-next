@@ -30,6 +30,7 @@ interface AppData {
   regenerate: () => Promise<void>;
   submitFeedback: (rec: Recommendation, type: FeedbackType) => Promise<void>;
   updatePrefs: (partial: Partial<Preferences>) => Promise<void>;
+  updateProfile: (newProfile: InterestProfile) => Promise<void>;
   toggleCategory: (category: Category, enabled: boolean) => Promise<void>;
   clearAllData: () => Promise<void>;
 }
@@ -132,6 +133,11 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setPrefs(next);
   }, []);
 
+  const updateProfile = useCallback(async (newProfile: InterestProfile) => {
+    await indexedDbStorage.saveInterestProfile(newProfile);
+    setProfile(newProfile);
+  }, []);
+
   const toggleCategory = useCallback(
     async (category: Category, enabled: boolean) => {
       const current = await indexedDbStorage.getPreferences();
@@ -182,10 +188,27 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       regenerate,
       submitFeedback,
       updatePrefs,
+      updateProfile,
       toggleCategory,
       clearAllData,
     }),
-    [loading, profile, prefs, engineResult, history, saved, feedbackHistory, digest, refresh, regenerate, submitFeedback, updatePrefs, toggleCategory, clearAllData],
+    [
+      loading,
+      profile,
+      prefs,
+      engineResult,
+      history,
+      saved,
+      feedbackHistory,
+      digest,
+      refresh,
+      regenerate,
+      submitFeedback,
+      updatePrefs,
+      updateProfile,
+      toggleCategory,
+      clearAllData,
+    ],
   );
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;

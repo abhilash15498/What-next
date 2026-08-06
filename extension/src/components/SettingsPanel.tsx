@@ -1,6 +1,27 @@
 import { useState, useEffect } from 'react';
 import { Trash2, ShieldCheck, KeyRound, Plus, X, ExternalLink, CheckCircle2, Circle } from 'lucide-react';
-import type { Category, Preferences } from '@whatnext/core';
+import type { Category, InterestProfile, Preferences } from '@whatnext/core';
+
+const ALL_STARTER_TOPICS = [
+  'ai',
+  'programming',
+  'cooking',
+  'food',
+  'anime',
+  'bollywood',
+  'travel',
+  'stock_market',
+  'finance',
+  'football',
+  'fitness',
+  'entrepreneurship',
+  'movies',
+  'books',
+  'career',
+  'design',
+  'gaming',
+  'productivity',
+];
 
 const ALL_CATEGORIES: Category[] = [
   'movie',
@@ -31,8 +52,10 @@ const LABELS: Record<Category, string> = {
 };
 
 interface Props {
+  profile?: InterestProfile;
   prefs: Preferences;
   onUpdate: (partial: Partial<Preferences>) => Promise<void>;
+  onUpdateProfile?: (profile: InterestProfile) => Promise<void>;
   onToggleCategory: (category: Category, enabled: boolean) => Promise<void>;
   onClearAll: () => Promise<void>;
   onRegenerate?: () => Promise<void>;
@@ -93,9 +116,25 @@ function ApiKeyRow({ label, value, placeholder, helpUrl, helpLabel, onChange, on
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export function SettingsPanel({ prefs, onUpdate, onToggleCategory, onClearAll, onRegenerate }: Props) {
+export function SettingsPanel({
+  profile = {},
+  prefs,
+  onUpdate,
+  onUpdateProfile,
+  onToggleCategory,
+  onClearAll,
+  onRegenerate,
+}: Props) {
   const [newDomain, setNewDomain] = useState('');
   const [confirmClear, setConfirmClear] = useState(false);
+  const [customTopicInput, setCustomTopicInput] = useState('');
+
+  // Local draft state for Interest Profile
+  const [profileDraft, setProfileDraft] = useState<InterestProfile>(profile);
+
+  useEffect(() => {
+    setProfileDraft(profile);
+  }, [profile]);
 
   // Draft states for all API keys
   const [tmdbDraft, setTmdbDraft] = useState(prefs.tmdbApiKey ?? '');
@@ -115,8 +154,120 @@ export function SettingsPanel({ prefs, onUpdate, onToggleCategory, onClearAll, o
     setAnthropicDraft(prefs.anthropicApiKey ?? '');
   }, [prefs]);
 
+  const toggleTopic = (tag: string) => {
+    setProfileDraft((prev) => {
+      const next = { ...prev };
+      const currentScore = next[tag]?.score ?? 0;
+      if (currentScore > 0) {
+        // Deactivate topic
+        delete next[tag];
+      } else {
+        // Activate topic
+        next[tag] = {
+          name: tag,
+          score: 50,
+          confidence: 0.8,
+          recentActivity: [Date.now()],
+          trend: 'rising',
+          relationships: {},
+          lastUpdated: Date.now(),
+        };
+      }
+      return next;
+    });
+  };
+
+  const addCustomTopic = () => {
+    const raw = customTopicInput.trim().toLowerCase().replace(/\s+/g, '_');
+    if (!raw) return;
+    setProfileDraft((prev) => ({
+      ...prev,
+      [raw]: {
+        name: raw,
+        score: 50,
+        confidence: 0.8,
+        recentActivity: [Date.now()],
+        trend: 'rising',
+        relationships: {},
+        lastUpdated: Date.now(),
+      },
+    }));
+    setCustomTopicInput('');
+  };
+
+  const activeTopicCount = Object.values(profileDraft).filter((i) => i.score > 0).length;
+
+  const handleSaveInterestsAndCategories = async () => {
+    if (onUpdateProfile) {
+      await onUpdateProfile(profileDraft);
+    }
+    if (onRegenerate) {
+      await onRegenerate();
+    }
+    alert('Your Interest Topics and Category preferences have been saved! Feed refreshed.');
+  };
+
   return (
     <div className="space-y-6 max-w-2xl">
+
+      {/* ── Active Interest Topics ──────────────────────────────────────────── */}
+      <section className="rounded-xl border border-border bg-surface p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h3 className="font-display text-sm font-semibold">Your Active Interest Topics</h3>
+            <p className="text-xs text-muted mt-0.5">
+              Click to enable/disable specific topics to match your exact taste.
+            </p>
+          </div>
+          <span className="text-xs font-mono text-signal font-medium">
+            {activeTopicCount} active
+          </span>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-4">
+          {Array.from(new Set([...ALL_STARTER_TOPICS, ...Object.keys(profileDraft)])).map((tag) => {
+            const isActive = (profileDraft[tag]?.score ?? 0) > 0;
+            return (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => toggleTopic(tag)}
+                className={
+                  isActive
+                    ? 'rounded-full border border-signal bg-signal/15 px-3 py-1 text-xs font-medium text-signal shadow-sm transition-all'
+                    : 'rounded-full border border-border bg-surface2 px-3 py-1 text-xs font-medium text-muted hover:border-signal/40 hover:text-text transition-all'
+                }
+              >
+                {isActive ? '✓ ' : '+ '}
+                {tag.replace(/_/g, ' ')}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex items-center gap-2 mb-4">
+          <input
+            type="text"
+            value={customTopicInput}
+            onChange={(e) => setCustomTopicInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                addCustomTopic();
+              }
+            }}
+            placeholder="Add custom topic (e.g. quantum_computing)..."
+            className="flex-1 rounded-lg border border-border bg-surface2 px-3 py-1.5 text-xs text-text placeholder:text-muted focus:border-signal focus:outline-none font-mono"
+          />
+          <button
+            type="button"
+            onClick={addCustomTopic}
+            className="rounded-lg border border-signal/40 bg-signal/10 px-3 py-1.5 text-xs font-mono font-medium text-signal hover:bg-signal/20 transition-colors"
+          >
+            Add Topic
+          </button>
+        </div>
+      </section>
 
       {/* ── Categories ──────────────────────────────────────────────────────── */}
       <section className="rounded-xl border border-border bg-surface p-4">
@@ -147,19 +298,14 @@ export function SettingsPanel({ prefs, onUpdate, onToggleCategory, onClearAll, o
         </div>
         <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
           <p className="text-xs text-muted">
-            Select which categories can appear in your recommendation feed.
+            Save your interests & categories to refresh your recommendation feed.
           </p>
           <button
-            onClick={async () => {
-              if (onRegenerate) {
-                await onRegenerate();
-              }
-              alert('Category preferences saved successfully! Your recommendation feed has been refreshed.');
-            }}
+            onClick={handleSaveInterestsAndCategories}
             className="inline-flex items-center gap-2 rounded-xl bg-signal px-4 py-2 font-mono text-xs font-semibold text-bg hover:opacity-90 transition-opacity"
           >
             <CheckCircle2 size={14} />
-            Save Categories
+            Save Settings & Refresh Feed
           </button>
         </div>
       </section>
