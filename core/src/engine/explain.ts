@@ -20,21 +20,34 @@ export function buildWhyNow(scored: ScoredCandidate, profile: InterestProfile): 
   const { interestMatchTags, dna, candidate } = scored;
   const time = timeLabel(candidate.estimatedMinutes);
 
+  // Clean candidate title prefix (e.g., 'Watch Punk Football' -> 'Punk Football')
+  const titleClean = candidate.title
+    .replace(/^(Watch|Explore|Master|Read|Plan|Study|Practice|Learn)\s+/i, '')
+    .trim();
+
+  // Create candidate-specific description summary snippet
+  let descSnippet = candidate.description.trim();
+  if (descSnippet.length > 95) {
+    descSnippet = descSnippet.slice(0, 92) + '…';
+  }
+  // Ensure friendly sentence flow
+  const descClause = descSnippet.charAt(0).toLowerCase() + descSnippet.slice(1);
+
   const activeInterests = Object.entries(profile)
     .filter(([_, i]) => i.score > 0)
     .map(([name, i]) => ({ tag: name, score: i.score }));
 
   if (activeInterests.length > 0 && interestMatchTags.length > 0) {
     const primaryTag = interestMatchTags[0].replace(/_/g, ' ');
-    return `Selected specifically for your interest in ${primaryTag}. This ${candidate.difficulty} ${candidate.category} activity takes about ${time} and matches your current preferences.`;
+    return `Matches your interest in ${primaryTag} — "${titleClean}" offers ${descClause} Fits well into a ${time} session today.`;
   }
 
   if (activeInterests.length > 0) {
     const topUserTag = activeInterests.sort((a, b) => b.score - a.score)[0].tag.replace(/_/g, ' ');
-    return `You're exploring ${topUserTag} — this high-quality ${candidate.category} recommendation was selected to expand your activity mix in ${time}.`;
+    return `Selected while exploring ${topUserTag} — "${titleClean}" (${descClause}) expands your activity mix in ${time}.`;
   }
 
-  return `A curated discovery pick (${Math.round(dna.popularity * 100)}% popularity) taking ${time}. Interact with recommendations to personalize your engine.`;
+  return `"${titleClean}" is a high-appeal discovery pick (${Math.round(dna.popularity * 100)}% popularity) covering ${descClause} Takes ${time}.`;
 }
 
 export function buildWhyNot(scored: ScoredCandidate): string {
@@ -59,19 +72,9 @@ export function buildAiReasoning(
   candidatesEvaluated: number,
   rank: number,
 ): string {
-  const pct = Math.round(scored.dna.confidence);
-  const scoreLabel = scored.score >= 75 ? 'strong' : scored.score >= 50 ? 'solid' : 'moderate';
+  const { interestMatchTags, score, dna } = scored;
+  const tagStr = formatTagList(interestMatchTags);
+  const confidence = Math.round(dna.confidence);
 
-  const matchPhrase = scored.interestMatchTags.length
-    ? `Your recent activity around ${formatTagList(scored.interestMatchTags)} gave this a boost`
-    : 'No strong interest match was found — popularity and freshness drove the ranking';
-
-  const rankPhrase =
-    rank === 1
-      ? 'It came out as your #1 pick'
-      : rank <= 3
-        ? `It ranked #${rank} — very close to the top`
-        : `It ranked #${rank} out of ${candidatesEvaluated} candidates`;
-
-  return `${matchPhrase}. ${rankPhrase} with a ${scoreLabel} score of ${scored.score}/100. There's an estimated ${pct}% chance this will feel genuinely useful to you right now.`;
+  return `Your recent activity around ${tagStr} gave this a boost. It ranked #${rank} out of ${candidatesEvaluated} candidates with a solid score of ${score}/100. There's an estimated ${confidence}% chance this will feel genuinely useful to you right now.`;
 }

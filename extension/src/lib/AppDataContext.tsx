@@ -148,7 +148,18 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const clearAllData = useCallback(async () => {
     setLoading(true);
     await indexedDbStorage.clearAll();
-    await indexedDbStorage.savePreferences(DEFAULT_PREFERENCES);
+    const resetPrefs: Preferences = {
+      ...DEFAULT_PREFERENCES,
+      tmdbApiKey: '',
+      googleBooksApiKey: '',
+      githubToken: '',
+      newsApiKey: '',
+      groqApiKey: '',
+      anthropicApiKey: '',
+      onboardingCompleted: false,
+    };
+    await indexedDbStorage.savePreferences(resetPrefs);
+    setPrefs(resetPrefs);
     if (typeof chrome !== 'undefined' && chrome.storage?.session) {
       await chrome.storage.session.remove('latestEngineResult').catch(() => {});
     }

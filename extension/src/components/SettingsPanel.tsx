@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Trash2, ShieldCheck, KeyRound, Plus, X, ExternalLink, CheckCircle2, Circle } from 'lucide-react';
 import type { Category, Preferences } from '@whatnext/core';
 
@@ -104,6 +104,16 @@ export function SettingsPanel({ prefs, onUpdate, onToggleCategory, onClearAll, o
   const [newsDraft, setNewsDraft] = useState(prefs.newsApiKey ?? '');
   const [groqDraft, setGroqDraft] = useState(prefs.groqApiKey ?? '');
   const [anthropicDraft, setAnthropicDraft] = useState(prefs.anthropicApiKey ?? '');
+
+  // Keep draft states synchronized when preferences are reset or updated
+  useEffect(() => {
+    setTmdbDraft(prefs.tmdbApiKey ?? '');
+    setBooksDraft(prefs.googleBooksApiKey ?? '');
+    setGithubDraft(prefs.githubToken ?? '');
+    setNewsDraft(prefs.newsApiKey ?? '');
+    setGroqDraft(prefs.groqApiKey ?? '');
+    setAnthropicDraft(prefs.anthropicApiKey ?? '');
+  }, [prefs]);
 
   return (
     <div className="space-y-6 max-w-2xl">
