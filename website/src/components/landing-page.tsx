@@ -53,7 +53,7 @@ const features = [
   {
     icon: Bot,
     title: "Bring Your Own Key (BYOK)",
-    body: "Use your own keys for Groq & TMDB. Zero setup required — public live API engines run 100% out of the box.",
+    body: "Use your own keys for your preferred LLM & TMDB. Zero setup required — public live API engines run 100% out of the box.",
   },
 ];
 
@@ -65,8 +65,8 @@ const apiShowcase = [
   },
   {
     icon: Cpu,
-    title: "Groq AI (Llama-3 70B)",
-    body: "Ultra-fast LLM engine generating deep, warm, human-like personalized 'Why Now?' explanations in real time.",
+    title: "Any LLM API You Prefer",
+    body: "Connect your preferred LLM provider (Groq, OpenAI, Anthropic, or local Ollama) to generate deep, warm, personalized 'Why Now?' explanations in real time.",
   },
   {
     icon: Terminal,
