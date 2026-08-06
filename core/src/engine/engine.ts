@@ -17,7 +17,7 @@ export async function generateRecommendations(storage: Storage): Promise<EngineR
     storage.getInterestProfile(),
     storage.getFeedbackHistory(500),
     storage.getPreferences(),
-    storage.getRecommendationHistory(50),
+    storage.getRecommendationHistory(100),
   ]);
 
   const context = getCurrentContext();
@@ -39,7 +39,16 @@ export async function generateRecommendations(storage: Storage): Promise<EngineR
     recentlyShownIds,
   });
 
-  const selected = selectDiverseFeed(scored, FEED_SIZE);
+  // Apply slight random jitter to top-scoring candidates to guarantee fresh feed rotation on Regenerate
+  const jittered = scored.map((s) => {
+    const jitter = (Math.random() - 0.5) * 4; // +/- 2 points jitter
+    return {
+      ...s,
+      score: Math.max(0, Math.min(100, Math.round((s.score + jitter) * 10) / 10)),
+    };
+  }).sort((a, b) => b.score - a.score);
+
+  const selected = selectDiverseFeed(jittered, FEED_SIZE);
 
   const recommendations: Recommendation[] = selected.map((s, idx) => {
     const window = assignWindow(s.candidate.suitedWindows, context.isWeekend, context.hourOfDay);
@@ -62,7 +71,7 @@ export async function generateRecommendations(storage: Storage): Promise<EngineR
     return rec;
   });
 
-  const rejections: RejectionExplanation[] = scored
+  const rejections: RejectionExplanation[] = jittered
     .filter((s) => s.score < LOW_SCORE_THRESHOLD)
     .slice(0, REJECTION_SAMPLE_SIZE)
     .map((s) => ({
@@ -73,13 +82,16 @@ export async function generateRecommendations(storage: Storage): Promise<EngineR
       score: s.score,
     }));
 
+  // Save generated recommendations to history so subsequent regenerations penalize repeated items
+  await storage.addRecommendations(recommendations.slice(0, 5));
+
   // Optionally enrich top recommendations with Groq LLM
   let finalRecommendations = recommendations;
   if (prefs.groqApiKey?.trim()) {
     try {
       finalRecommendations = await enrichWithGroq(recommendations, profile, prefs.groqApiKey.trim());
     } catch {
-      // Silent fallback — keep template-generated recommendations
+      // Silent fallback
     }
   }
 
