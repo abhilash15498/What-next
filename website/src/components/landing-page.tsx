@@ -144,7 +144,7 @@ export default function LandingPage() {
 
       <div className="relative">
         {/* Features Section */}
-        <section id="features" className="relative px-6 pt-10 pb-20 lg:px-10 lg:pt-6">
+        <section id="features" className="relative px-6 pt-2 pb-16 lg:px-10 lg:pt-0">
           <div className="mx-auto max-w-5xl">
             <div className="mb-16 max-w-xl">
               <p className="mb-4 font-mono text-[10px] tracking-[0.28em] text-[#e8a84a] uppercase">
