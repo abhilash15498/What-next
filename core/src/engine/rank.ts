@@ -114,10 +114,10 @@ export function scoreCandidate(
     candidate.popularity * WEIGHTS.popularity +
     usefulness * WEIGHTS.estimatedUsefulness;
 
-  // If the user has active interests set, heavily penalize items with zero match
+  // If the user has active interests set, zero-match items are completely excluded from recommendations
   const activeInterestCount = Object.values(ctx.profile).filter((i) => i.score > 0).length;
   if (activeInterestCount > 0 && sim.score === 0) {
-    raw *= 0.25;
+    raw = 0;
   }
 
   const maxPossible =
