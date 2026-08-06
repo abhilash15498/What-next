@@ -8,7 +8,7 @@
  *   - The network request fails
  *   - The model returns malformed JSON
  *
- * Only enriches the top ENRICH_LIMIT recommendations (default 5) to keep latency low.
+ * Caches LLM outputs in memory per recommendation ID to prevent duplicate Groq API calls.
  */
 
 import type { InterestProfile, Recommendation } from '../types.js';
@@ -18,9 +18,13 @@ import type { InterestProfile, Recommendation } from '../types.js';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
 /** Max tokens per recommendation — keep short for speed */
-const MAX_TOKENS = 300;
-/** Only enrich this many top recs per generation cycle */
-const ENRICH_LIMIT = 5;
+const MAX_TOKENS = 250;
+/** Only enrich top 3 recs per generation cycle to optimize API usage */
+const ENRICH_LIMIT = 3;
+
+// ── In-Memory Cache ────────────────────────────────────────────────────────────
+
+const ENRICH_CACHE = new Map<string, GroqEnrichedFields>();
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -87,6 +91,11 @@ async function enrichSingle(
   rec: Recommendation,
   profile: InterestProfile,
 ): Promise<GroqEnrichedFields | null> {
+  const cacheKey = `${rec.candidateId}_${rec.title}`;
+  if (ENRICH_CACHE.has(cacheKey)) {
+    return ENRICH_CACHE.get(cacheKey)!;
+  }
+
   const body = {
     model: GROQ_MODEL,
     messages: [
@@ -116,11 +125,14 @@ async function enrichSingle(
   const parsed = JSON.parse(content) as Partial<GroqEnrichedFields>;
   if (!parsed.whyNow || !parsed.aiReasoning || !parsed.description) return null;
 
-  return {
+  const enrichedFields: GroqEnrichedFields = {
     whyNow: parsed.whyNow,
     aiReasoning: parsed.aiReasoning,
     description: parsed.description,
   };
+
+  ENRICH_CACHE.set(cacheKey, enrichedFields);
+  return enrichedFields;
 }
 
 // ── Public API ─────────────────────────────────────────────────────────────────
