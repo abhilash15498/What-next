@@ -75,9 +75,8 @@ export function RecommendationCard({ recommendation: rec, onFeedback, highlight 
       {expanded && (
         <div className="mt-2 space-y-2 rounded-lg bg-surface2 p-3 text-xs leading-relaxed text-muted animate-dissolve">
           <p>{rec.whyNow}</p>
-          <p className="border-t border-border pt-2 text-[11px] font-mono text-muted/80">{rec.aiReasoning}</p>
           {rec.dna.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 pt-1">
+            <div className="flex flex-wrap gap-1 pt-1 border-t border-border/50">
               {rec.dna.tags.map((tag) => (
                 <span key={tag} className="rounded-full bg-bg px-2 py-0.5 font-mono text-[10px] text-muted">
                   {tag.replace(/_/g, ' ')}
