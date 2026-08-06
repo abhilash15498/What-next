@@ -253,7 +253,7 @@ export default function LandingPage() {
                   <p className="text-[#ece8e1]/90 font-medium">"What should I do next?"</p>
                   <p className="mt-2 text-[11px] text-[#ece8e1]/45">→ Queries <code className="text-[#e8a84a]">whatnext://interest-profile</code></p>
                   <p className="text-[11px] text-[#ece8e1]/45">→ Runs <code className="text-[#e8a84a]">generate_recommendations</code></p>
-                  <p className="mt-2 text-[11px] text-green-400">✓ 100% Local (stdio / localhost:8787)</p>
+                  <p className="mt-2 text-[11px] text-green-400">✓ 100% Local Privacy (stdio / Custom Server Sync)</p>
                 </div>
               </div>
             </div>
