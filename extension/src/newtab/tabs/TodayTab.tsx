@@ -1,4 +1,4 @@
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, ExternalLink } from 'lucide-react';
 import { useAppData } from '../../lib/AppDataContext';
 import { RecommendationCard } from '../../components/RecommendationCard';
 import { GhostField } from '../../components/GhostField';
@@ -80,8 +80,20 @@ export function TodayTab() {
                     <p className="text-xs text-muted">Nothing scheduled here yet.</p>
                   )}
                   {engineResult.timeline[window].map((rec) => (
-                    <div key={rec.id} className="rounded-lg border border-border bg-surface2 p-3">
-                      <p className="text-sm font-medium leading-snug">{rec.title}</p>
+                    <div key={rec.id} className="rounded-lg border border-border bg-surface2 p-3 hover:border-signal/40 transition-colors">
+                      {rec.url ? (
+                        <a
+                          href={rec.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="group flex items-start justify-between gap-2 text-sm font-medium leading-snug hover:text-signal transition-colors"
+                        >
+                          <span className="group-hover:underline">{rec.title}</span>
+                          <ExternalLink size={12} className="shrink-0 text-muted group-hover:text-signal mt-1" />
+                        </a>
+                      ) : (
+                        <p className="text-sm font-medium leading-snug">{rec.title}</p>
+                      )}
                       <p className="mt-1 text-[11px] text-muted">
                         {rec.dna.estimatedMinutes} min · score {rec.score}
                       </p>

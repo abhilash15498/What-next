@@ -35,6 +35,7 @@ interface Props {
   onUpdate: (partial: Partial<Preferences>) => Promise<void>;
   onToggleCategory: (category: Category, enabled: boolean) => Promise<void>;
   onClearAll: () => Promise<void>;
+  onRegenerate?: () => Promise<void>;
 }
 
 // ── Reusable API key row ───────────────────────────────────────────────────────
@@ -92,7 +93,7 @@ function ApiKeyRow({ label, value, placeholder, helpUrl, helpLabel, onChange, on
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export function SettingsPanel({ prefs, onUpdate, onToggleCategory, onClearAll }: Props) {
+export function SettingsPanel({ prefs, onUpdate, onToggleCategory, onClearAll, onRegenerate }: Props) {
   const [newDomain, setNewDomain] = useState('');
   const [confirmClear, setConfirmClear] = useState(false);
 
@@ -226,6 +227,32 @@ export function SettingsPanel({ prefs, onUpdate, onToggleCategory, onClearAll }:
           onChange={setAnthropicDraft}
           onSave={() => onUpdate({ anthropicApiKey: anthropicDraft })}
         />
+
+        <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
+          <p className="text-xs text-muted">
+            Clicking save updates your local IndexedDB preferences instantly.
+          </p>
+          <button
+            onClick={async () => {
+              await onUpdate({
+                tmdbApiKey: tmdbDraft.trim(),
+                googleBooksApiKey: booksDraft.trim(),
+                githubToken: githubDraft.trim(),
+                newsApiKey: newsDraft.trim(),
+                groqApiKey: groqDraft.trim(),
+                anthropicApiKey: anthropicDraft.trim(),
+              });
+              if (onRegenerate) {
+                await onRegenerate();
+              }
+              alert('All API keys saved successfully! Your recommendation engine has been refreshed.');
+            }}
+            className="inline-flex items-center gap-2 rounded-xl bg-signal px-4 py-2 font-mono text-xs font-semibold text-bg hover:opacity-90 transition-opacity"
+          >
+            <KeyRound size={14} />
+            Save All API Keys
+          </button>
+        </div>
       </section>
 
       {/* ── Privacy — domain blocklist ───────────────────────────────────────── */}

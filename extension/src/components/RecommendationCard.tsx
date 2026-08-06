@@ -23,26 +23,38 @@ export function RecommendationCard({ recommendation: rec, onFeedback, highlight 
       }
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2 mb-1.5">
             <CategoryBadge category={rec.category} />
             <DifficultyBadge difficulty={rec.dna.difficulty} />
             <span className="font-mono text-xs text-muted">{rec.dna.estimatedMinutes} min</span>
           </div>
           <h3 className={highlight ? 'font-display text-lg font-medium text-text' : 'font-display text-base font-medium text-text'}>
-            {rec.title}
+            {rec.url ? (
+              <a
+                href={rec.url}
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-signal hover:underline transition-colors"
+              >
+                {rec.title}
+              </a>
+            ) : (
+              rec.title
+            )}
           </h3>
           <p className="mt-1 text-sm text-muted leading-relaxed">{rec.description}</p>
         </div>
+
         {rec.url && (
           <a
             href={rec.url}
             target="_blank"
             rel="noreferrer"
-            className="shrink-0 text-muted hover:text-signal transition-colors"
-            title="Open link"
+            className="shrink-0 inline-flex items-center gap-1 rounded-lg border border-signal/40 bg-signal/10 px-2.5 py-1.5 font-mono text-xs font-medium text-signal hover:bg-signal/20 transition-colors"
+            title="Open link in new tab"
           >
-            <ExternalLink size={16} />
+            Open <ExternalLink size={12} />
           </a>
         )}
       </div>
@@ -78,7 +90,19 @@ export function RecommendationCard({ recommendation: rec, onFeedback, highlight 
 
       <div className="mt-3 flex items-center justify-between">
         <FeedbackButtons recommendation={rec} onFeedback={onFeedback} />
-        <span className="font-mono text-[11px] text-muted">score {rec.score}</span>
+        <div className="flex items-center gap-3">
+          {rec.url && (
+            <a
+              href={rec.url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 font-mono text-xs text-signal hover:underline"
+            >
+              Visit link <ExternalLink size={12} />
+            </a>
+          )}
+          <span className="font-mono text-[11px] text-muted">score {rec.score}</span>
+        </div>
       </div>
     </div>
   );
