@@ -21,6 +21,8 @@ import {
   Film,
   TrendingUp,
   Compass,
+  MessageSquareCode,
+  FileText,
 } from "lucide-react";
 import HeroAsciiOne from "@/components/ui/hero-ascii-one";
 
@@ -365,6 +367,121 @@ export default function LandingPage() {
                   </p>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Community Feedback & Documentation Section */}
+        <section className="relative px-6 pb-24 lg:px-10">
+          <div className="mx-auto max-w-5xl">
+            <div className="mb-12 max-w-2xl">
+              <p className="mb-3 font-mono text-[10px] tracking-[0.28em] text-[#e8a84a] uppercase">
+                Community Feedback & Insights
+              </p>
+              <h2 className="font-display text-3xl leading-tight font-bold tracking-tight text-[#ece8e1] sm:text-4xl">
+                Open Source & Community Driven
+              </h2>
+              <p className="mt-4 font-mono text-sm leading-relaxed text-[#ece8e1]/55">
+                Explore technical feedback from our GitHub community. For complete documentation, MCP setup, and maximum usage details, view our official GitHub README.
+              </p>
+            </div>
+
+            {/* Community Feedback Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+              <div className="group relative rounded-2xl border border-[#ece8e1]/10 bg-[#080a10]/80 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#e8a84a] hover:shadow-[0_0_25px_rgba(232,168,74,0.35)] hover:bg-[#0c121e]">
+                <div className="mb-3 flex items-center justify-between font-mono text-xs text-[#e8a84a]">
+                  <span>Privacy & Architecture</span>
+                  <span className="text-[#ece8e1]/30">GitHub Discussion</span>
+                </div>
+                <p className="font-mono text-xs leading-relaxed text-[#ece8e1]/70 italic">
+                  "Having an extension analyze local browsing signals without transmitting data to third-party tracking servers is a huge win for privacy."
+                </p>
+                <div className="mt-4 flex items-center justify-between border-t border-[#ece8e1]/10 pt-3 font-mono text-[11px] text-[#ece8e1]/40">
+                  <span>@dev_privacy</span>
+                  <a
+                    href="https://github.com/abhilash15498/What-next/discussions"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#e8a84a] hover:underline"
+                  >
+                    View Thread ↗
+                  </a>
+                </div>
+              </div>
+
+              <div className="group relative rounded-2xl border border-[#ece8e1]/10 bg-[#080a10]/80 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#e8a84a] hover:shadow-[0_0_25px_rgba(232,168,74,0.35)] hover:bg-[#0c121e]">
+                <div className="mb-3 flex items-center justify-between font-mono text-xs text-[#e8a84a]">
+                  <span>12 Live API Categories</span>
+                  <span className="text-[#ece8e1]/30">GitHub Discussion</span>
+                </div>
+                <p className="font-mono text-xs leading-relaxed text-[#ece8e1]/70 italic">
+                  "The single dynamic recommendation feed eliminates endless tab scrolling. The MealDB and GitHub live feeds work seamlessly."
+                </p>
+                <div className="mt-4 flex items-center justify-between border-t border-[#ece8e1]/10 pt-3 font-mono text-[11px] text-[#ece8e1]/40">
+                  <span>@tech_lead_alex</span>
+                  <a
+                    href="https://github.com/abhilash15498/What-next/discussions"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#e8a84a] hover:underline"
+                  >
+                    View Thread ↗
+                  </a>
+                </div>
+              </div>
+
+              <div className="group relative rounded-2xl border border-[#ece8e1]/10 bg-[#080a10]/80 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#e8a84a] hover:shadow-[0_0_25px_rgba(232,168,74,0.35)] hover:bg-[#0c121e]">
+                <div className="mb-3 flex items-center justify-between font-mono text-xs text-[#e8a84a]">
+                  <span>Native MCP Protocol</span>
+                  <span className="text-[#ece8e1]/30">GitHub Discussion</span>
+                </div>
+                <p className="font-mono text-xs leading-relaxed text-[#ece8e1]/70 italic">
+                  "Integrating Cursor IDE with local whatnext://interest-profile via stdio makes context-aware AI coding effortless."
+                </p>
+                <div className="mt-4 flex items-center justify-between border-t border-[#ece8e1]/10 pt-3 font-mono text-[11px] text-[#ece8e1]/40">
+                  <span>@mcp_builder</span>
+                  <a
+                    href="https://github.com/abhilash15498/What-next/discussions"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#e8a84a] hover:underline"
+                  >
+                    View Thread ↗
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* GitHub README & Discussions Banner */}
+            <div className="flex flex-col gap-5 rounded-2xl border border-[#e8a84a]/20 bg-[#050505]/70 p-6 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-display text-base font-semibold text-[#ece8e1]">
+                  📖 For Maximum Usage & Advanced Configuration
+                </p>
+                <p className="mt-1 font-mono text-xs text-[#ece8e1]/55">
+                  Check out our official GitHub README file for complete provider guides, MCP setup, and configuration steps.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3 shrink-0">
+                <a
+                  href="https://github.com/abhilash15498/What-next/discussions"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-[#ece8e1]/20 px-5 py-2.5 font-mono text-xs text-[#ece8e1]/80 transition-colors hover:border-[#e8a84a] hover:text-[#e8a84a]"
+                >
+                  <MessageSquareCode className="h-4 w-4" />
+                  Submit Feedback ↗
+                </a>
+                <a
+                  href="https://github.com/abhilash15498/What-next#readme"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#e8a84a] px-5 py-2.5 font-mono text-xs font-semibold text-[#050505] transition-opacity hover:opacity-90"
+                >
+                  <FileText className="h-4 w-4" />
+                  Read GitHub README ↗
+                </a>
+              </div>
             </div>
           </div>
         </section>
