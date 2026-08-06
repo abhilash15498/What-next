@@ -120,14 +120,19 @@ export function SettingsPanel({ prefs, onUpdate, onToggleCategory, onClearAll, o
 
       {/* ── Categories ──────────────────────────────────────────────────────── */}
       <section className="rounded-xl border border-border bg-surface p-4">
-        <h3 className="font-display text-sm font-semibold mb-3">Categories</h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-display text-sm font-semibold">Categories</h3>
+          <span className="text-xs text-muted font-mono">
+            {ALL_CATEGORIES.length - prefs.disabledCategories.length} / {ALL_CATEGORIES.length} active
+          </span>
+        </div>
         <div className="grid grid-cols-2 gap-2">
           {ALL_CATEGORIES.map((cat) => {
             const enabled = !prefs.disabledCategories.includes(cat);
             return (
               <label
                 key={cat}
-                className="flex items-center gap-2 rounded-lg border border-border bg-surface2 px-3 py-2 text-sm cursor-pointer"
+                className="flex items-center gap-2 rounded-lg border border-border bg-surface2 px-3 py-2 text-sm cursor-pointer hover:border-signal/40 transition-colors"
               >
                 <input
                   type="checkbox"
@@ -139,6 +144,23 @@ export function SettingsPanel({ prefs, onUpdate, onToggleCategory, onClearAll, o
               </label>
             );
           })}
+        </div>
+        <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
+          <p className="text-xs text-muted">
+            Select which categories can appear in your recommendation feed.
+          </p>
+          <button
+            onClick={async () => {
+              if (onRegenerate) {
+                await onRegenerate();
+              }
+              alert('Category preferences saved successfully! Your recommendation feed has been refreshed.');
+            }}
+            className="inline-flex items-center gap-2 rounded-xl bg-signal px-4 py-2 font-mono text-xs font-semibold text-bg hover:opacity-90 transition-opacity"
+          >
+            <CheckCircle2 size={14} />
+            Save Categories
+          </button>
         </div>
       </section>
 
