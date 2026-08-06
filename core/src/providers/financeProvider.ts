@@ -1,7 +1,7 @@
-import type { Candidate, InterestProfile, Preferences } from '../types.js';
+import type { Candidate, Category, InterestProfile, Preferences } from '../types.js';
 import type { Provider } from './types.js';
 
-// ── Authentic Stock Market & Financial Analysis Catalog ──────────────────────
+// ── Authentic Stock Market & Financial Analysis Fallback Catalog ──────────────
 
 const AUTHENTIC_FINANCE_ITEMS: Candidate[] = [
   {
@@ -32,59 +32,72 @@ const AUTHENTIC_FINANCE_ITEMS: Candidate[] = [
     addedAt: Date.parse('2025-02-01'),
     suitedWindows: ['now', 'weekend'],
   },
-  {
-    id: 'finance_bogleheads_index',
-    title: 'Review low-cost index fund asset allocation (3-Fund Portfolio)',
-    description:
-      'Learn key principles of passive indexing, total stock market diversification, and dollar-cost averaging.',
-    url: 'https://www.bogleheads.org/wiki/Three-fund_portfolio',
-    category: 'finance',
-    tags: ['stock_market', 'finance', 'productivity'],
-    difficulty: 'beginner',
-    estimatedMinutes: 30,
-    popularity: 0.88,
-    addedAt: Date.parse('2025-01-15'),
-    suitedWindows: ['now', 'weekend'],
-  },
-  {
-    id: 'finance_fundamental_balance_sheet',
-    title: 'Read fundamental analysis guide: balance sheets & FCF',
-    description:
-      'Understand free cash flow, operating margins, debt-to-equity, and income statement health before picking stocks.',
-    url: 'https://www.investopedia.com/fundamental-analysis-4689757',
-    category: 'finance',
-    tags: ['stock_market', 'finance', 'investing'],
-    difficulty: 'intermediate',
-    estimatedMinutes: 35,
-    popularity: 0.86,
-    addedAt: Date.parse('2025-01-20'),
-    suitedWindows: ['now', 'tonight'],
-  },
-  {
-    id: 'finance_tech_earnings_reports',
-    title: 'Analyze quarterly tech sector earnings & AI Capex guidance',
-    description:
-      'Review revenue growth, operating margins, and AI infrastructure capital expenditures across top market leaders.',
-    url: 'https://www.google.com/finance',
-    category: 'finance',
-    tags: ['stock_market', 'finance', 'ai'],
-    difficulty: 'intermediate',
-    estimatedMinutes: 30,
-    popularity: 0.85,
-    addedAt: Date.parse('2025-02-15'),
-    suitedWindows: ['now', 'tonight'],
-  },
 ];
 
 const FINANCE_TAGS = new Set(['stock_market', 'finance', 'investing', 'entrepreneurship']);
 
+async function fetchLiveFinanceRSS(query: string): Promise<Candidate[]> {
+  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (!res.ok) return [];
+
+    const text = await res.text();
+    const items: Candidate[] = [];
+    const itemMatches = text.match(/<item>[\s\S]*?<\/item>/g) || [];
+
+    for (let i = 0; i < Math.min(itemMatches.length, 5); i++) {
+      const raw = itemMatches[i];
+      const titleMatch = raw.match(/<title>(.*?)<\/title>/);
+      const linkMatch = raw.match(/<link>(.*?)<\/link>/);
+      const pubDateMatch = raw.match(/<pubDate>(.*?)<\/pubDate>/);
+
+      if (titleMatch && linkMatch) {
+        const title = titleMatch[1].replace(/<!\[CDATA\[|\]\]>/g, '').replace(/ - .*$/, '').trim();
+        const link = linkMatch[1].trim();
+
+        items.push({
+          id: `finance_rss_${i}_${Date.now()}`,
+          title: `Market News: ${title}`,
+          description: `Live market coverage and financial metrics on ${query}.`,
+          url: link,
+          category: 'finance',
+          tags: ['stock_market', 'finance'],
+          difficulty: 'intermediate',
+          estimatedMinutes: 15,
+          popularity: 0.9,
+          addedAt: pubDateMatch ? Date.parse(pubDateMatch[1]) || Date.now() : Date.now(),
+          suitedWindows: ['now', 'tonight'],
+        });
+      }
+    }
+    return items;
+  } catch {
+    clearTimeout(timeoutId);
+    return [];
+  }
+}
+
 export const financeProvider: Provider = {
   category: 'finance',
-  name: 'Stock Market & Finance Provider',
+  name: 'Stock Market & Finance Provider (Live RSS)',
   async getCandidates(_prefs: Preferences, profile: InterestProfile): Promise<Candidate[]> {
     const hasFinanceInterest = Object.values(profile).some(
       (i) => i.score > 0 && FINANCE_TAGS.has(i.name),
     );
-    return hasFinanceInterest ? AUTHENTIC_FINANCE_ITEMS : [];
+    if (!hasFinanceInterest) return [];
+
+    try {
+      const liveFinance = await fetchLiveFinanceRSS('stock market tech earnings S&P 500');
+      if (liveFinance.length > 0) return liveFinance;
+    } catch {
+      // Fallback
+    }
+
+    return AUTHENTIC_FINANCE_ITEMS;
   },
 };

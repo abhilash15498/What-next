@@ -1,7 +1,7 @@
 import type { Candidate, InterestProfile, Preferences } from '../types.js';
 import type { Provider } from './types.js';
 
-// ── Authentic Curated Shopping & Deals Catalog ───────────────────────────────
+// ── Authentic Curated Shopping & Deals Fallback Catalog ──────────────────────
 
 const SHOPPING_ITEMS: Candidate[] = [
   {
@@ -19,34 +19,6 @@ const SHOPPING_ITEMS: Candidate[] = [
     suitedWindows: ['weekend', 'now'],
   },
   {
-    id: 'shop_chef_knife_castiron',
-    title: 'Browse Japanese 8-inch Gyuto Chef Knives & Lodge Cast Iron Skillets',
-    description:
-      'High-carbon stainless steel kitchen knives and pre-seasoned cast iron skillets for precision home cooking.',
-    url: 'https://www.google.com/search?tbm=shop&q=japanese+gyuto+chef+knife+8+inch',
-    category: 'shopping',
-    tags: ['cooking', 'food'],
-    difficulty: 'beginner',
-    estimatedMinutes: 20,
-    popularity: 0.9,
-    addedAt: Date.parse('2025-02-01'),
-    suitedWindows: ['tonight', 'weekend'],
-  },
-  {
-    id: 'shop_football_boots',
-    title: 'Check Firm Ground Football Boots & Precision Training Balls (Nike / Adidas)',
-    description:
-      'Compare lightweight firm-ground studs and match-grade footballs for turf and grass pitch sessions.',
-    url: 'https://www.google.com/search?tbm=shop&q=firm+ground+football+boots',
-    category: 'shopping',
-    tags: ['football', 'fitness'],
-    difficulty: 'beginner',
-    estimatedMinutes: 20,
-    popularity: 0.85,
-    addedAt: Date.parse('2025-01-15'),
-    suitedWindows: ['weekend'],
-  },
-  {
     id: 'shop_anc_headphones',
     title: 'Compare Active Noise Cancelling Wireless Headphones (Sony WH-1000XM5 / Bose)',
     description:
@@ -60,26 +32,67 @@ const SHOPPING_ITEMS: Candidate[] = [
     addedAt: Date.parse('2025-01-20'),
     suitedWindows: ['now', 'weekend'],
   },
-  {
-    id: 'shop_standing_desk',
-    title: 'Explore Electric Dual-Motor Height Adjustable Standing Desks',
-    description:
-      'Electric motorized sit-stand desks with memory presets to alternate between sitting and standing.',
-    url: 'https://www.google.com/search?tbm=shop&q=electric+standing+desk+dual+motor',
-    category: 'shopping',
-    tags: ['productivity', 'fitness', 'career'],
-    difficulty: 'intermediate',
-    estimatedMinutes: 35,
-    popularity: 0.84,
-    addedAt: Date.parse('2025-02-05'),
-    suitedWindows: ['weekend'],
-  },
 ];
+
+async function fetchLiveShoppingRSS(tag: string): Promise<Candidate[]> {
+  const query = `${tag} best tech gear deals reviews`;
+  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (!res.ok) return [];
+
+    const text = await res.text();
+    const items: Candidate[] = [];
+    const itemMatches = text.match(/<item>[\s\S]*?<\/item>/g) || [];
+
+    for (let i = 0; i < Math.min(itemMatches.length, 5); i++) {
+      const raw = itemMatches[i];
+      const titleMatch = raw.match(/<title>(.*?)<\/title>/);
+      const linkMatch = raw.match(/<link>(.*?)<\/link>/);
+
+      if (titleMatch && linkMatch) {
+        const title = titleMatch[1].replace(/<!\[CDATA\[|\]\]>/g, '').replace(/ - .*$/, '').trim();
+        const link = linkMatch[1].trim();
+
+        items.push({
+          id: `shop_rss_${i}_${Date.now()}`,
+          title: `Gear & Deal: ${title}`,
+          description: `Live product review, tech deal, and buyers guide for ${tag}.`,
+          url: link,
+          category: 'shopping',
+          tags: [tag, 'shopping'],
+          difficulty: 'beginner',
+          estimatedMinutes: 20,
+          popularity: 0.9,
+          addedAt: Date.now(),
+          suitedWindows: ['weekend', 'now'],
+        });
+      }
+    }
+    return items;
+  } catch {
+    clearTimeout(timeoutId);
+    return [];
+  }
+}
 
 export const shoppingProvider: Provider = {
   category: 'shopping',
-  name: 'Shopping & Gear Deals Provider',
-  getCandidates(_prefs: Preferences, _profile: InterestProfile): Promise<Candidate[]> {
-    return Promise.resolve(SHOPPING_ITEMS);
+  name: 'Shopping & Gear Deals Provider (Live RSS)',
+  async getCandidates(_prefs: Preferences, profile: InterestProfile): Promise<Candidate[]> {
+    const topTag = Object.values(profile).find((i) => i.score > 0)?.name ?? 'tech';
+
+    try {
+      const liveDeals = await fetchLiveShoppingRSS(topTag);
+      if (liveDeals.length > 0) return liveDeals;
+    } catch {
+      // Fallback
+    }
+
+    return SHOPPING_ITEMS;
   },
 };
