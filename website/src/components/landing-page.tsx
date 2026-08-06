@@ -418,6 +418,18 @@ export default function LandingPage() {
                 <p className="mt-2 max-w-md font-mono text-xs leading-relaxed text-[#ece8e1]/45">
                   Download the pre-packaged extension zip file and follow the 3 quick steps above.
                 </p>
+                <p className="mt-1 font-mono text-[11px] text-[#ece8e1]/35">
+                  By downloading, you agree to our{" "}
+                  <a
+                    href="/privacy.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#e8a84a] underline hover:text-[#e8a84a]/80"
+                  >
+                    Privacy Policy
+                  </a>
+                  .
+                </p>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <a

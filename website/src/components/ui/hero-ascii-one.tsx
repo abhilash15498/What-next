@@ -94,6 +94,18 @@ export default function HeroAsciiOne({ onLearnMore }: HeroAsciiOneProps) {
                 <ArrowDown className="h-4 w-4" strokeWidth={1.5} />
               </button>
             </div>
+            <p className="animate-fade-up-delay-2 mt-3 font-mono text-[11px] text-[#ece8e1]/40">
+              By downloading, you agree to our{" "}
+              <a
+                href="/privacy.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#e8a84a] underline hover:text-[#e8a84a]/80"
+              >
+                Privacy Policy
+              </a>
+              . 100% local & open source.
+            </p>
           </div>
         </div>
       </div>
