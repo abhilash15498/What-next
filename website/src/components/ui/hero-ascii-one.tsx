@@ -59,7 +59,7 @@ export default function HeroAsciiOne({ onLearnMore }: HeroAsciiOneProps) {
         </div>
       </header>
 
-      <div className="relative z-10 flex min-h-[88vh] items-center justify-end pt-24 pb-12 lg:pt-0 lg:pb-8">
+      <div className="relative z-10 flex min-h-[90vh] items-center justify-end pt-32 pb-16 lg:pt-28 lg:pb-12">
         <div className="w-full px-6 lg:w-[48%] lg:px-10 lg:pr-16">
           <div className="max-w-md lg:ml-auto">
             <p className="animate-fade-up mb-5 font-mono text-[10px] tracking-[0.28em] text-[#e8a84a] uppercase">
