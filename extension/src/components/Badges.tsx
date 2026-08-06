@@ -12,6 +12,7 @@ const LABELS: Record<Category, string> = {
   news: 'News',
   travel: 'Travel',
   finance: 'Finance & Stocks',
+  shopping: 'Shopping',
 };
 
 export function CategoryBadge({ category }: { category: Category }) {
