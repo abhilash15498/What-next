@@ -1,6 +1,6 @@
 import type { Candidate, InterestProfile, Preferences } from '../types.js';
 import type { Provider } from './types.js';
-import { cleanTitle } from '../utils/text.js';
+import { cleanTitle, isTagRelevantToArticle } from '../utils/text.js';
 
 const STATIC_FITNESS_ITEMS: Candidate[] = [
   {
@@ -56,6 +56,8 @@ async function fetchLiveFitnessRSS(tag: string): Promise<Candidate[]> {
         const title = cleanTitle(rawTitle);
         const link = linkMatch[1].trim();
 
+        if (!isTagRelevantToArticle(title, tag)) continue;
+
         items.push({
           id: `fit_rss_${i}_${Date.now()}`,
           title: `Workout Guide: ${title}`,
@@ -78,19 +80,19 @@ async function fetchLiveFitnessRSS(tag: string): Promise<Candidate[]> {
   }
 }
 
+const FITNESS_TAGS = new Set(['fitness', 'health', 'workout']);
+
 export const fitnessProvider: Provider = {
   category: 'fitness',
   name: 'Fitness & Health Provider (Live RSS)',
   async getCandidates(_prefs: Preferences, profile: InterestProfile): Promise<Candidate[]> {
     const hasFitnessInterest = Object.values(profile).some(
-      (i) => i.score > 0 && (i.name === 'fitness' || i.name === 'football' || i.name === 'health'),
+      (i) => i.score > 0 && FITNESS_TAGS.has(i.name),
     );
     if (!hasFitnessInterest) return [];
 
-    const activeTag = Object.values(profile).find((i) => i.score > 0 && (i.name === 'fitness' || i.name === 'football'))?.name ?? 'fitness';
-
     try {
-      const liveItems = await fetchLiveFitnessRSS(activeTag);
+      const liveItems = await fetchLiveFitnessRSS('fitness');
       if (liveItems.length > 0) return liveItems;
     } catch {
       // Fallback
