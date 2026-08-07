@@ -29,8 +29,22 @@ export function Options() {
 
   const clearAll = async () => {
     await indexedDbStorage.clearAll();
-    await indexedDbStorage.savePreferences(DEFAULT_PREFERENCES);
-    setPrefs(DEFAULT_PREFERENCES);
+    const resetPrefs = {
+      ...DEFAULT_PREFERENCES,
+      onboardingCompleted: false,
+    };
+    await indexedDbStorage.savePreferences(resetPrefs);
+    setPrefs(resetPrefs);
+
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      if (chrome.storage.session) {
+        await chrome.storage.session.clear().catch(() => {});
+      }
+      if (chrome.storage.local) {
+        await chrome.storage.local.clear().catch(() => {});
+      }
+      chrome.runtime.sendMessage({ type: 'DATA_CLEARED' }).catch(() => {});
+    }
   };
 
   if (loading) {

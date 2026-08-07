@@ -76,9 +76,16 @@ const items: Candidate[] = [
   },
 ];
 
+const CODING_TAGS = new Set(['programming', 'ai', 'mcp', 'quantum_computing', 'web_dev', 'browser-extensions']);
+
 export const codingProjectProvider: Provider = {
   category: 'coding_project',
   name: 'Coding Project Provider',
-  getCandidates: (_prefs: Preferences, _profile: InterestProfile): Promise<Candidate[]> =>
-    Promise.resolve(items),
+  getCandidates: (_prefs: Preferences, profile: InterestProfile): Promise<Candidate[]> => {
+    const hasCodingInterest = Object.values(profile).some(
+      (i) => i.score > 0 && CODING_TAGS.has(i.name),
+    );
+    if (!hasCodingInterest) return Promise.resolve([]);
+    return Promise.resolve(items);
+  },
 };

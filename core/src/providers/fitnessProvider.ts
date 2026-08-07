@@ -59,7 +59,7 @@ async function fetchLiveFitnessRSS(tag: string): Promise<Candidate[]> {
         items.push({
           id: `fit_rss_${i}_${Date.now()}`,
           title: `Workout Guide: ${title}`,
-          description: `Live workout routine and health performance guide for ${tag}.`,
+          description: `Live workout routine, health training, and athletic performance guide.`,
           url: link,
           category: 'fitness',
           tags: [tag, 'fitness'],
@@ -82,6 +82,11 @@ export const fitnessProvider: Provider = {
   category: 'fitness',
   name: 'Fitness & Health Provider (Live RSS)',
   async getCandidates(_prefs: Preferences, profile: InterestProfile): Promise<Candidate[]> {
+    const hasFitnessInterest = Object.values(profile).some(
+      (i) => i.score > 0 && (i.name === 'fitness' || i.name === 'football' || i.name === 'health'),
+    );
+    if (!hasFitnessInterest) return [];
+
     const activeTag = Object.values(profile).find((i) => i.score > 0 && (i.name === 'fitness' || i.name === 'football'))?.name ?? 'fitness';
 
     try {

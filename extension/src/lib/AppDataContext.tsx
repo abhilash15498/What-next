@@ -115,6 +115,25 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refresh();
+
+    if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
+      const handleMessage = (msg: { type: string }) => {
+        if (msg.type === 'DATA_CLEARED') {
+          setProfile({});
+          setPrefs(DEFAULT_PREFERENCES);
+          setHistory([]);
+          setSaved([]);
+          setFeedbackHistory([]);
+          setDigest(null);
+          setEngineResult(null);
+          setLoading(false);
+        }
+      };
+      chrome.runtime.onMessage.addListener(handleMessage);
+      return () => {
+        chrome.runtime.onMessage.removeListener(handleMessage);
+      };
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -166,13 +185,27 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     };
     await indexedDbStorage.savePreferences(resetPrefs);
     setPrefs(resetPrefs);
-    if (typeof chrome !== 'undefined' && chrome.storage?.session) {
-      await chrome.storage.session.remove('latestEngineResult').catch(() => {});
-    }
+    setProfile({});
+    setHistory([]);
+    setSaved([]);
+    setFeedbackHistory([]);
+    setDigest(null);
     setEngineResult(null);
-    await loadAll();
+
+    // Purge Chrome storage caches
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      if (chrome.storage.session) {
+        await chrome.storage.session.clear().catch(() => {});
+      }
+      if (chrome.storage.local) {
+        await chrome.storage.local.clear().catch(() => {});
+      }
+      // Broadcast clear event to all open extension pages
+      chrome.runtime.sendMessage({ type: 'DATA_CLEARED' }).catch(() => {});
+    }
+
     setLoading(false);
-  }, [loadAll]);
+  }, []);
 
   const value = useMemo<AppData>(
     () => ({

@@ -161,9 +161,17 @@ export function scoreAllCandidates(
     recentlyShownIds: Set<string>;
   },
 ): ScoredCandidate[] {
+  const activeInterestCount = Object.values(ctx.profile).filter((i) => i.score > 0).length;
+
   return candidates
     .filter((c) => !ctx.prefs.disabledCategories.includes(c.category))
     .map((c) => scoreCandidate(c, ctx))
+    .filter((s) => {
+      if (activeInterestCount > 0) {
+        return s.interestMatchTags.length > 0 && s.score >= 30;
+      }
+      return true;
+    })
     .sort((a, b) => b.score - a.score);
 }
 

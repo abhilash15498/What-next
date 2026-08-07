@@ -1,6 +1,6 @@
 import type { Candidate, InterestProfile, Preferences } from '../types.js';
 import type { Provider } from './types.js';
-import { cleanTitle } from '../utils/text.js';
+import { cleanTitle, isTagRelevantToArticle } from '../utils/text.js';
 
 const STATIC_LEARNING_ITEMS: Candidate[] = [
   {
@@ -56,10 +56,12 @@ async function fetchLiveLearningRSS(tag: string): Promise<Candidate[]> {
         const title = cleanTitle(rawTitle);
         const link = linkMatch[1].trim();
 
+        if (!isTagRelevantToArticle(title, tag)) continue;
+
         items.push({
           id: `learn_rss_${i}_${Date.now()}`,
           title: `Study: ${title}`,
-          description: `Live course guide and technical breakdown covering ${tag}.`,
+          description: `Live tutorial, learning guide, and knowledge breakdown.`,
           url: link,
           category: 'learning',
           tags: [tag, 'learning'],
@@ -82,10 +84,15 @@ export const learningProvider: Provider = {
   category: 'learning',
   name: 'Courses & Learning Provider (Live RSS)',
   async getCandidates(_prefs: Preferences, profile: InterestProfile): Promise<Candidate[]> {
-    const activeTag = Object.values(profile).find((i) => i.score > 0)?.name ?? 'programming';
+    const activeTags = Object.values(profile)
+      .filter((i) => i.score > 0)
+      .map((i) => i.name);
+    const selectedTag = activeTags.length > 0
+      ? activeTags[Math.floor(Math.random() * activeTags.length)]
+      : 'programming';
 
     try {
-      const liveItems = await fetchLiveLearningRSS(activeTag);
+      const liveItems = await fetchLiveLearningRSS(selectedTag);
       if (liveItems.length > 0) return liveItems;
     } catch {
       // Fallback

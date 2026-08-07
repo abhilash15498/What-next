@@ -147,6 +147,9 @@ export const githubProvider: Provider = {
   category: 'github',
   name: 'GitHub Repository Provider (live)',
   async getCandidates(prefs: Preferences, profile: InterestProfile): Promise<Candidate[]> {
+    const hasCodingInterest = Object.values(profile).some((i) => i.score > 0 && CODING_TAGS.has(i.name));
+    if (!hasCodingInterest) return [];
+
     try {
       const fetched = await fetchGithubCandidates(prefs.githubToken?.trim() ?? '', profile);
       if (fetched.length > 0) return fetched;
@@ -154,7 +157,6 @@ export const githubProvider: Provider = {
       // Fall through
     }
 
-    const hasCodingInterest = Object.values(profile).some((i) => i.score > 0 && CODING_TAGS.has(i.name));
-    return hasCodingInterest ? STATIC_ITEMS : [];
+    return STATIC_ITEMS;
   },
 };

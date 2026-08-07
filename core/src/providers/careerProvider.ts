@@ -1,6 +1,6 @@
 import type { Candidate, InterestProfile, Preferences } from '../types.js';
 import type { Provider } from './types.js';
-import { cleanTitle } from '../utils/text.js';
+import { cleanTitle, isTagRelevantToArticle } from '../utils/text.js';
 
 const STATIC_CAREER_ITEMS: Candidate[] = [
   {
@@ -19,7 +19,7 @@ const STATIC_CAREER_ITEMS: Candidate[] = [
 ];
 
 async function fetchLiveCareerRSS(tag: string): Promise<Candidate[]> {
-  const query = `${tag} software engineer career tech interview guide 2026`;
+  const query = `${tag} career growth guide industry 2026`;
   const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 4000);
@@ -43,10 +43,12 @@ async function fetchLiveCareerRSS(tag: string): Promise<Candidate[]> {
         const title = cleanTitle(rawTitle);
         const link = linkMatch[1].trim();
 
+        if (!isTagRelevantToArticle(title, tag)) continue;
+
         items.push({
           id: `career_rss_${i}_${Date.now()}`,
           title: `Career Guide: ${title}`,
-          description: `Live tech career insight, interview strategy, and growth breakdown for ${tag}.`,
+          description: `Live career insights, industry trends, and professional growth guide.`,
           url: link,
           category: 'career',
           tags: [tag, 'career'],
@@ -69,10 +71,15 @@ export const careerProvider: Provider = {
   category: 'career',
   name: 'Career Provider (Live RSS)',
   async getCandidates(_prefs: Preferences, profile: InterestProfile): Promise<Candidate[]> {
-    const activeTag = Object.values(profile).find((i) => i.score > 0)?.name ?? 'programming';
+    const activeTags = Object.values(profile)
+      .filter((i) => i.score > 0)
+      .map((i) => i.name);
+    const selectedTag = activeTags.length > 0
+      ? activeTags[Math.floor(Math.random() * activeTags.length)]
+      : 'career';
 
     try {
-      const liveItems = await fetchLiveCareerRSS(activeTag);
+      const liveItems = await fetchLiveCareerRSS(selectedTag);
       if (liveItems.length > 0) return liveItems;
     } catch {
       // Fallback

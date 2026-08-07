@@ -63,7 +63,7 @@ async function fetchLiveShoppingRSS(tag: string): Promise<Candidate[]> {
         items.push({
           id: `shop_rss_${i}_${Date.now()}`,
           title: `Gear & Deal: ${title}`,
-          description: `Live product review, tech deal, and buyers guide for ${tag}.`,
+          description: `Live product review, gear deal, and buyer guide breakdown.`,
           url: link,
           category: 'shopping',
           tags: [tag, 'shopping'],
@@ -82,11 +82,23 @@ async function fetchLiveShoppingRSS(tag: string): Promise<Candidate[]> {
   }
 }
 
+const SHOPPING_TAGS = new Set(['shopping', 'tech', 'productivity', 'gear', 'deals']);
+
 export const shoppingProvider: Provider = {
   category: 'shopping',
   name: 'Shopping & Gear Deals Provider (Live RSS)',
   async getCandidates(_prefs: Preferences, profile: InterestProfile): Promise<Candidate[]> {
-    const topTag = Object.values(profile).find((i) => i.score > 0)?.name ?? 'tech';
+    const hasShoppingInterest = Object.values(profile).some(
+      (i) => i.score > 0 && SHOPPING_TAGS.has(i.name),
+    );
+    if (!hasShoppingInterest) return [];
+
+    const activeTags = Object.values(profile)
+      .filter((i) => i.score > 0 && SHOPPING_TAGS.has(i.name))
+      .map((i) => i.name);
+    const topTag = activeTags.length > 0
+      ? activeTags[Math.floor(Math.random() * activeTags.length)]
+      : 'tech';
 
     try {
       const liveDeals = await fetchLiveShoppingRSS(topTag);

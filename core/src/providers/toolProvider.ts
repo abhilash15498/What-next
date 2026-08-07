@@ -18,6 +18,8 @@ const STATIC_TOOL_ITEMS: Candidate[] = [
   },
 ];
 
+const TECH_TOOL_TAGS = new Set(['programming', 'ai', 'productivity', 'design', 'gaming']);
+
 async function fetchLiveToolRSS(tag: string): Promise<Candidate[]> {
   const query = `${tag} developer tool software productivity app review 2026`;
   const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
@@ -46,7 +48,7 @@ async function fetchLiveToolRSS(tag: string): Promise<Candidate[]> {
         items.push({
           id: `tool_rss_${i}_${Date.now()}`,
           title: `Discover Tool: ${title}`,
-          description: `Live developer tool, library, and productivity app breakdown for ${tag}.`,
+          description: `Latest developer tools, productivity software, and utility app breakdown.`,
           url: link,
           category: 'tool',
           tags: [tag, 'productivity'],
@@ -69,10 +71,10 @@ export const toolProvider: Provider = {
   category: 'tool',
   name: 'Tools & Software Provider (Live RSS)',
   async getCandidates(_prefs: Preferences, profile: InterestProfile): Promise<Candidate[]> {
-    const activeTag = Object.values(profile).find((i) => i.score > 0)?.name ?? 'productivity';
+    const matchedTag = Object.values(profile).find((i) => i.score > 0 && TECH_TOOL_TAGS.has(i.name))?.name ?? 'productivity';
 
     try {
-      const liveItems = await fetchLiveToolRSS(activeTag);
+      const liveItems = await fetchLiveToolRSS(matchedTag);
       if (liveItems.length > 0) return liveItems;
     } catch {
       // Fallback
